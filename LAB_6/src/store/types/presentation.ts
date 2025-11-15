@@ -51,8 +51,8 @@ export type TextElement = BaseElement & {
   lineHeight?: number;
   bold?: boolean;
   italic?: boolean;
+  placeholder?: string;
   underline?: boolean;
-
 };
 
 export type ImageElement = BaseElement & {

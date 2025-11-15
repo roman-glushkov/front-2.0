@@ -51,9 +51,6 @@ function App() {
           onElementClick={(id) => dispatch(selectElement(id))}
           setSelElId={(id) => dispatch(selectElement(id))}
           updateSlide={(fn) => dispatch(updateSlide(fn))}
-          handleTextChange={() => {}}
-          handleTextCommit={() => {}}
-          handleTextKeyDown={() => {}}
         />
       </div>
     </div>

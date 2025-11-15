@@ -25,9 +25,6 @@ export function SlidePreview({ slide, scale }: Props) {
           selElId=""
           setSelElId={() => {}}
           updateSlide={() => {}}
-          handleTextChange={() => {}}
-          handleTextCommit={() => {}}
-          handleTextKeyDown={() => {}}
           onElementClick={() => {}}
           preview
         />

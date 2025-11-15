@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextElement as TEl, SlideElement } from '../../../../store/types/presentation';
 import ResizeHandle from './ResizeHandle';
 
@@ -31,7 +31,34 @@ export default function TextElementView({
   handleTextKeyDown,
 }: Props) {
   const [editingElIdLocal, setEditingElIdLocal] = useState('');
+  const [localContent, setLocalContent] = useState(el.content);
   const isEditingNow = editingElIdLocal === el.id && el.type === 'text';
+
+  // Синхронизируем локальное состояние с Redux состоянием
+  useEffect(() => {
+    setLocalContent(el.content);
+  }, [el.content]);
+
+  const showPlaceholder = !el.content && el.placeholder && !isEditingNow;
+
+  const handleLocalTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newContent = e.target.value;
+    setLocalContent(newContent);
+    handleTextChange(e, el.id);
+  };
+
+  const handleLocalTextCommit = (e: React.FocusEvent<HTMLInputElement>) => {
+    handleTextCommit(e, el.id);
+    setEditingElIdLocal('');
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!preview) {
+      setLocalContent(el.content);
+      setEditingElIdLocal(el.id);
+    }
+  };
 
   return (
     <div
@@ -40,10 +67,7 @@ export default function TextElementView({
         e.stopPropagation();
         setSelElId(el.id);
       }}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        if (!preview) setEditingElIdLocal(el.id);
-      }}
+      onDoubleClick={handleDoubleClick}
       onPointerDown={(e) => startDrag(e, el)}
       style={{
         position: 'absolute',
@@ -53,7 +77,7 @@ export default function TextElementView({
         height: el.size.height,
         fontFamily: el.font,
         fontSize: `${el.fontSize}px`,
-        color: el.color || '#1f2937',
+        color: showPlaceholder ? '#999' : el.color || '#1f2937',
         backgroundColor: el.backgroundColor || 'transparent',
         textAlign: el.align || 'left',
         lineHeight: el.lineHeight || 1.2,
@@ -71,21 +95,18 @@ export default function TextElementView({
         boxSizing: 'border-box',
         whiteSpace: 'pre-wrap',
         fontWeight: el.bold ? 'bold' : 'normal',
-        fontStyle: el.italic ? 'italic' : 'normal',
+        fontStyle: showPlaceholder ? 'italic' : el.italic ? 'italic' : 'normal',
         textDecoration: el.underline ? 'underline' : 'none',
-
       }}
     >
       {isEditingNow ? (
         <input
           autoFocus
-          value={el.content}
-          onChange={(e) => handleTextChange(e, el.id)}
+          value={localContent}
+          placeholder={el.placeholder}
+          onChange={handleLocalTextChange}
           onKeyDown={(e) => handleTextKeyDown(e, el.id)}
-          onBlur={(e) => {
-            handleTextCommit(e, el.id);
-            setEditingElIdLocal('');
-          }}
+          onBlur={handleLocalTextCommit}
           style={{
             width: '100%',
             height: '100%',
@@ -100,9 +121,10 @@ export default function TextElementView({
             fontWeight: el.bold ? 'bold' : 'normal',
             fontStyle: el.italic ? 'italic' : 'normal',
             textDecoration: el.underline ? 'underline' : 'none',
-
           }}
         />
+      ) : showPlaceholder ? (
+        el.placeholder
       ) : (
         el.content
       )}

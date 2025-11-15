@@ -41,15 +41,11 @@ export default function ToolbarGroup({
   const [activeTextOption, setActiveTextOption] = useState<string | null>(null);
 
   const handleButtonClick = (action: string) => {
-    if (action === 'Добавить слайд') handleAddSlideClick();
-    else if (action === 'Изменить цвет текста') handleTextColorClick();
-    else if (action === 'Изменить фон текста') handleFillColorClick();
-    else if (action === 'Изменить фон слайда') handleBackgroundColorClick();
-    else if (
-      action === 'Изменить размер текста' ||
-      action === 'text-align' ||
-      action === 'Изменить межстрочный интервал'
-    ) {
+    if (action === 'ADD_SLIDE') handleAddSlideClick();
+    else if (action === 'TEXT_COLOR') handleTextColorClick();
+    else if (action === 'SHAPE_FILL') handleFillColorClick();
+    else if (action === 'SLIDE_BACKGROUND') handleBackgroundColorClick();
+    else if (action === 'TEXT_SIZE' || action === 'TEXT_ALIGN' || action === 'TEXT_LINE_HEIGHT') {
       setActiveTextOption(activeTextOption === action ? null : action);
     } else {
       onAction(action);
@@ -62,23 +58,23 @@ export default function ToolbarGroup({
         <div key={action} className="toolbar-button-wrapper">
           <button onClick={() => handleButtonClick(action)}>{label}</button>
 
-          {action === 'Добавить слайд' && showTemplates && (
+          {action === 'ADD_SLIDE' && showTemplates && (
             <TemplatePopup onSelect={handleTemplateSelect} />
           )}
 
-          {action === 'Изменить цвет текста' && showTextColorPicker && (
+          {action === 'TEXT_COLOR' && showTextColorPicker && (
             <ColorSection type="text" onSelect={handleColorSelect} />
           )}
 
-          {action === 'Изменить фон текста' && showFillColorPicker && (
+          {action === 'SHAPE_FILL' && showFillColorPicker && (
             <ColorSection type="fill" onSelect={handleColorSelect} />
           )}
 
-          {action === 'Изменить фон слайда' && showBackgroundColorPicker && (
+          {action === 'SLIDE_BACKGROUND' && showBackgroundColorPicker && (
             <ColorSection type="background" onSelect={handleColorSelect} />
           )}
 
-          {action === 'Изменить размер текста' && activeTextOption === action && (
+          {action === 'TEXT_SIZE' && activeTextOption === action && (
             <TextOptionsPopup
               options={TEXT_SIZE_OPTIONS}
               onSelect={(key) => {
@@ -88,7 +84,7 @@ export default function ToolbarGroup({
             />
           )}
 
-          {action === 'text-align' && activeTextOption === action && (
+          {action === 'TEXT_ALIGN' && activeTextOption === action && (
             <TextAlignPopup
               onSelect={(key) => {
                 handleTextOptionSelect(key);
@@ -97,7 +93,7 @@ export default function ToolbarGroup({
             />
           )}
 
-          {action === 'Изменить межстрочный интервал' && activeTextOption === action && (
+          {action === 'TEXT_LINE_HEIGHT' && activeTextOption === action && (
             <TextOptionsPopup
               options={LINE_HEIGHT_OPTIONS}
               onSelect={(key) => {

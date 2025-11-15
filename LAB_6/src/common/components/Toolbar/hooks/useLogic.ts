@@ -45,9 +45,9 @@ export function useToolbarLogic(onAction: (action: string) => void) {
   };
 
   const handleColorSelect = (type: 'text' | 'fill' | 'background', color: string) => {
-    if (type === 'text') onAction(`Изменить цвет текста: ${color}`);
-    else if (type === 'fill') onAction(`Изменить фон текста: ${color}`);
-    else onAction(`Изменить фон слайда: ${color}`);
+    if (type === 'text') onAction(`TEXT_COLOR: ${color}`);
+    else if (type === 'fill') onAction(`SHAPE_FILL: ${color}`);
+    else onAction(`SLIDE_BACKGROUND: ${color}`);
     setShowTextColorPicker(false);
     setShowFillColorPicker(false);
     setShowBackgroundColorPicker(false);
@@ -55,13 +55,13 @@ export function useToolbarLogic(onAction: (action: string) => void) {
 
   const handleTextOptionSelect = (key: string) => {
     if (key.endsWith('px')) {
-      onAction(`Изменить размер текста: ${key}`);
+      onAction(`TEXT_SIZE: ${key}`);
     } else if (['left', 'center', 'right', 'justify'].includes(key)) {
-      onAction(`Изменить горизонтальное выравнивание текста: ${key}`);
+      onAction(`TEXT_ALIGN_HORIZONTAL: ${key}`);
     } else if (['top', 'middle', 'bottom'].includes(key)) {
-      onAction(`Изменить вертикальное выравнивание текста: ${key}`);
+      onAction(`TEXT_ALIGN_VERTICAL: ${key}`);
     } else if (!isNaN(Number(key))) {
-      onAction(`Изменить межстрочный интервал: ${key}`);
+      onAction(`TEXT_LINE_HEIGHT: ${key}`);
     }
   };
 

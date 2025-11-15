@@ -48,6 +48,17 @@ export const editorSlice = createSlice({
       );
     },
 
+    updateTextContent(state, action: PayloadAction<{ elementId: string; content: string }>) {
+      const { elementId, content } = action.payload;
+      const slideId = state.selectedSlideId;
+      const slide = state.presentation.slides.find((s) => s.id === slideId);
+      if (!slide) return;
+      console.log('Обновлён текст элемента:', elementId, content);
+      state.presentation.slides = state.presentation.slides.map((s) =>
+        s.id === slideId ? func.changeText(s, elementId, content) : s
+      );
+    },
+
     addSlide(state, action: PayloadAction<Slide>) {
       console.log('Добавлен слайд:', action.payload.id);
       state.presentation = func.addSlide(state.presentation, action.payload);
@@ -72,9 +83,7 @@ export const editorSlice = createSlice({
     },
 
     changeBackground(state, action: PayloadAction<Background>) {
-      const slide = state.presentation.slides.find(
-        (s) => s.id === state.selectedSlideId
-      );
+      const slide = state.presentation.slides.find((s) => s.id === state.selectedSlideId);
       if (!slide) return;
       console.log('Изменён фон слайда:', slide.id);
       state.presentation.slides = state.presentation.slides.map((s) =>
@@ -82,7 +91,7 @@ export const editorSlice = createSlice({
       );
     },
 
-    handleAction(state, action: PayloadAction<string>) {    
+    handleAction(state, action: PayloadAction<string>) {
       const act = action.payload;
       const slideId = state.selectedSlideId;
       const slide = state.presentation.slides.find((s) => s.id === slideId);
@@ -90,15 +99,15 @@ export const editorSlice = createSlice({
       console.log('Совершенное действие:', act);
 
       const slideMap: Record<string, Slide> = {
-        'Добавить Титульный слайд': sld.slideTitle,
-        'Добавить Заголовок и объект': sld.slideTitleAndObject,
-        'Добавить Заголовок раздела': sld.slideSectionHeader,
-        'Добавить Два объекта': sld.slideTwoObjects,
-        'Добавить Сравнение': sld.slideComparison,
-        'Добавить Только заголовок': sld.slideJustHeadline,
-        'Добавить Пустой слайд': sld.slideEmpty,
-        'Добавить Объект с подписью': sld.slideObjectWithSignature,
-        'Добавить Рисунок с подписью': sld.slideDrawingWithCaption,
+        ADD_TITLE_SLIDE: sld.slideTitle,
+        ADD_TITLE_AND_OBJECT_SLIDE: sld.slideTitleAndObject,
+        ADD_SECTION_HEADER_SLIDE: sld.slideSectionHeader,
+        ADD_TWO_OBJECTS_SLIDE: sld.slideTwoObjects,
+        ADD_COMPARISON_SLIDE: sld.slideComparison,
+        ADD_JUST_HEADLINE_SLIDE: sld.slideJustHeadline,
+        ADD_EMPTY_SLIDE: sld.slideEmpty,
+        ADD_OBJECT_WITH_SIGNATURE_SLIDE: sld.slideObjectWithSignature,
+        ADD_DRAWING_WITH_CAPTION_SLIDE: sld.slideDrawingWithCaption,
       };
 
       if (slideMap[act]) {
@@ -108,7 +117,7 @@ export const editorSlice = createSlice({
         return;
       }
 
-      if (act.startsWith('Изменить размер текста:')) {
+      if (act.startsWith('TEXT_SIZE:')) {
         const size = parseInt(act.split(':')[1].trim(), 10);
         if (slide && elId)
           state.presentation.slides = state.presentation.slides.map((s) =>
@@ -117,7 +126,7 @@ export const editorSlice = createSlice({
         return;
       }
 
-      if (act.startsWith('Изменить горизонтальное выравнивание текста:')) {
+      if (act.startsWith('TEXT_ALIGN_HORIZONTAL:')) {
         const align = act.split(':')[1].trim() as 'left' | 'center' | 'right' | 'justify';
         if (slide && elId)
           state.presentation.slides = state.presentation.slides.map((s) =>
@@ -126,18 +135,16 @@ export const editorSlice = createSlice({
         return;
       }
 
-      if (act.startsWith('Изменить вертикальное выравнивание текста:')) {
+      if (act.startsWith('TEXT_ALIGN_VERTICAL:')) {
         const vAlign = act.split(':')[1].trim() as 'top' | 'middle' | 'bottom';
         if (slide && elId)
           state.presentation.slides = state.presentation.slides.map((s) =>
-            s.id === slide.id
-              ? func.changeTextVerticalAlignment(s, elId, vAlign)
-              : s
+            s.id === slide.id ? func.changeTextVerticalAlignment(s, elId, vAlign) : s
           );
         return;
       }
 
-      if (act.startsWith('Изменить межстрочный интервал:')) {
+      if (act.startsWith('TEXT_LINE_HEIGHT:')) {
         const lineHeight = parseFloat(act.split(':')[1].trim());
         if (slide && elId)
           state.presentation.slides = state.presentation.slides.map((s) =>
@@ -146,7 +153,7 @@ export const editorSlice = createSlice({
         return;
       }
 
-      if (act.startsWith('Изменить цвет текста:')) {
+      if (act.startsWith('TEXT_COLOR:')) {
         const color = act.split(':')[1].trim();
         if (slide && elId)
           state.presentation.slides = state.presentation.slides.map((s) =>
@@ -155,37 +162,31 @@ export const editorSlice = createSlice({
         return;
       }
 
-      if (act.startsWith('Изменить фон текста:')) {
+      if (act.startsWith('SHAPE_FILL:')) {
         const color = act.split(':')[1].trim();
         if (slide && elId)
           state.presentation.slides = state.presentation.slides.map((s) =>
-            s.id === slide.id
-              ? func.changeTextBackgroundColor(s, elId, color)
-              : s
+            s.id === slide.id ? func.changeTextBackgroundColor(s, elId, color) : s
           );
         return;
       }
 
-      if (act.startsWith('Изменить фон слайда:')) {
+      if (act.startsWith('SLIDE_BACKGROUND:')) {
         const color = act.split(': ')[1];
         if (slide)
           state.presentation.slides = state.presentation.slides.map((s) =>
-            s.id === slide.id
-              ? func.changeBackground(s, { type: 'color', value: color })
-              : s
+            s.id === slide.id ? func.changeBackground(s, { type: 'color', value: color }) : s
           );
         return;
       }
-      
-      if (act === 'toggle-bold' && slide && elId) {
+
+      if (act === 'TEXT_BOLD' && slide && elId) {
         state.presentation.slides = state.presentation.slides.map((s) =>
           s.id === slide.id
             ? {
                 ...s,
                 elements: s.elements.map((el) =>
-                  el.id === elId && el.type === 'text'
-                    ? { ...el, bold: !el.bold }
-                    : el
+                  el.id === elId && el.type === 'text' ? { ...el, bold: !el.bold } : el
                 ),
               }
             : s
@@ -193,15 +194,13 @@ export const editorSlice = createSlice({
         return;
       }
 
-      if (act === 'toggle-italic' && slide && elId) {
+      if (act === 'TEXT_ITALIC' && slide && elId) {
         state.presentation.slides = state.presentation.slides.map((s) =>
           s.id === slide.id
             ? {
                 ...s,
                 elements: s.elements.map((el) =>
-                  el.id === elId && el.type === 'text'
-                    ? { ...el, italic: !el.italic }
-                    : el
+                  el.id === elId && el.type === 'text' ? { ...el, italic: !el.italic } : el
                 ),
               }
             : s
@@ -209,15 +208,13 @@ export const editorSlice = createSlice({
         return;
       }
 
-      if (act === 'toggle-underline' && slide && elId) {
+      if (act === 'TEXT_UNDERLINE' && slide && elId) {
         state.presentation.slides = state.presentation.slides.map((s) =>
           s.id === slide.id
             ? {
                 ...s,
                 elements: s.elements.map((el) =>
-                  el.id === elId && el.type === 'text'
-                    ? { ...el, underline: !el.underline }
-                    : el
+                  el.id === elId && el.type === 'text' ? { ...el, underline: !el.underline } : el
                 ),
               }
             : s
@@ -226,7 +223,7 @@ export const editorSlice = createSlice({
       }
 
       switch (act) {
-        case 'Удалить слайд':
+        case 'REMOVE_SLIDE':
           if (slideId) {
             state.presentation = func.removeSlide(state.presentation, slideId);
             state.selectedSlideId = state.presentation.slides[0]?.id || '';
@@ -234,7 +231,7 @@ export const editorSlice = createSlice({
           }
           break;
 
-        case 'Добавить текст':
+        case 'ADD_TEXT':
           if (slide) {
             state.presentation.slides = state.presentation.slides.map((s) =>
               s.id === slide.id ? func.addText(s, temp.createTextElement()) : s
@@ -242,7 +239,7 @@ export const editorSlice = createSlice({
           }
           break;
 
-        case 'Добавить изображение':
+        case 'ADD_IMAGE':
           if (slide) {
             state.presentation.slides = state.presentation.slides.map((s) =>
               s.id === slide.id ? func.addImage(s, temp.createImageElement()) : s
@@ -250,7 +247,7 @@ export const editorSlice = createSlice({
           }
           break;
 
-        case 'Удалить элемент':
+        case 'REMOVE_ELEMENT':
           if (slide && elId) {
             state.presentation.slides = state.presentation.slides.map((s) =>
               s.id === slide.id ? func.removeElement(s, elId) : s
@@ -267,6 +264,7 @@ export const {
   selectSlide,
   selectElement,
   updateSlide,
+  updateTextContent,
   addSlide,
   removeSlide,
   reorderSlides,

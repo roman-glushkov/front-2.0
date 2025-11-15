@@ -1,5 +1,8 @@
+// src/common/components/Workspace/index.tsx
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { Slide, SlideElement, TextElement, ImageElement } from '../../../store/types/presentation';
+import { updateTextContent } from '../../../store/editorSlice';
 import './styles.css';
 
 import TextElementView from './parts/TextElement';
@@ -14,22 +17,33 @@ interface Props {
   onElementClick: (elementId: string) => void;
   setSelElId: (elementId: string) => void;
   updateSlide: (updater: (s: Slide) => Slide) => void;
-  handleTextChange: (e: React.ChangeEvent<HTMLInputElement>, elId: string) => void;
-  handleTextCommit: (e: React.FocusEvent<HTMLInputElement>, elId: string) => void;
-  handleTextKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, elId: string) => void;
   preview?: boolean;
+  // Убраны handleTextChange, handleTextCommit, handleTextKeyDown
 }
 
-export default function Workspace({
-  slide,
-  selElId,
-  setSelElId,
-  updateSlide,
-  handleTextChange,
-  handleTextCommit,
-  handleTextKeyDown,
-  preview,
-}: Props) {
+export default function Workspace({ slide, selElId, setSelElId, updateSlide, preview }: Props) {
+  const dispatch = useDispatch();
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>, elId: string) => {
+    console.log('handleTextChange called:', e.target.value, elId);
+    dispatch(
+      updateTextContent({
+        elementId: elId,
+        content: e.target.value,
+      })
+    );
+  };
+
+  const handleTextCommit = (e: React.FocusEvent<HTMLInputElement>, elId: string) => {
+    console.log('handleTextCommit called:', e.target.value, elId);
+  };
+
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    }
+  };
+
   const startDrag = useDrag({
     preview,
     setSelElId,

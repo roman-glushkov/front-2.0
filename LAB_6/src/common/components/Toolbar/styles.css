@@ -292,7 +292,7 @@
   padding: 6px 10px;
   font-size: 13px;
   font-weight: 500;
-  color: #000000;
+  color: #000;
   text-align: left;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -310,6 +310,7 @@
   font-weight: 600;
   color: #fff;
 }
+
 .text-align-popup {
   position: absolute;
   top: 44px;

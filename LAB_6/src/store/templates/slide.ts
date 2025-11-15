@@ -7,7 +7,8 @@ export const slideTitle: Slide = {
     {
       type: 'text',
       id: 'slide1_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 144, y: 100 },
       size: { width: 660, height: 180 },
       font: 'Arial',
@@ -19,7 +20,8 @@ export const slideTitle: Slide = {
     {
       type: 'text',
       id: 'slide1_desc1',
-      content: 'Подзаголовок слайда',
+      content: '',
+      placeholder: 'Подзаголовок слайда',
       position: { x: 144, y: 290 },
       size: { width: 660, height: 120 },
       font: 'Arial',
@@ -38,7 +40,8 @@ export const slideTitleAndObject: Slide = {
     {
       type: 'text',
       id: 'slide2_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 70, y: 40 },
       size: { width: 818, height: 100 },
       font: 'Arial',
@@ -50,7 +53,8 @@ export const slideTitleAndObject: Slide = {
     {
       type: 'text',
       id: 'slide2_caption1',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 70, y: 150 },
       size: { width: 818, height: 330 },
       font: 'Arial',
@@ -69,7 +73,8 @@ export const slideSectionHeader: Slide = {
     {
       type: 'text',
       id: 'slide3_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 75, y: 140 },
       size: { width: 808, height: 200 },
       font: 'Arial',
@@ -81,7 +86,8 @@ export const slideSectionHeader: Slide = {
     {
       type: 'text',
       id: 'slide3_caption1',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 75, y: 345 },
       size: { width: 808, height: 130 },
       font: 'Arial',
@@ -100,7 +106,8 @@ export const slideTwoObjects: Slide = {
     {
       type: 'text',
       id: 'slide4_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 70, y: 40 },
       size: { width: 818, height: 100 },
       font: 'Arial',
@@ -112,7 +119,8 @@ export const slideTwoObjects: Slide = {
     {
       type: 'text',
       id: 'slide4_caption1',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 70, y: 150 },
       size: { width: 404, height: 330 },
       font: 'Arial',
@@ -124,7 +132,8 @@ export const slideTwoObjects: Slide = {
     {
       type: 'text',
       id: 'slide4_caption2',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 484, y: 150 },
       size: { width: 404, height: 330 },
       font: 'Arial',
@@ -143,7 +152,8 @@ export const slideComparison: Slide = {
     {
       type: 'text',
       id: 'slide5_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 70, y: 40 },
       size: { width: 818, height: 100 },
       font: 'Arial',
@@ -155,7 +165,8 @@ export const slideComparison: Slide = {
     {
       type: 'text',
       id: 'slide5_left_caption1',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 70, y: 145 },
       size: { width: 404, height: 50 },
       font: 'Arial',
@@ -167,7 +178,8 @@ export const slideComparison: Slide = {
     {
       type: 'text',
       id: 'slide5_left_caption2',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 70, y: 200 },
       size: { width: 404, height: 280 },
       font: 'Arial',
@@ -179,7 +191,8 @@ export const slideComparison: Slide = {
     {
       type: 'text',
       id: 'slide5_right_caption1',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 484, y: 145 },
       size: { width: 404, height: 50 },
       font: 'Arial',
@@ -191,7 +204,8 @@ export const slideComparison: Slide = {
     {
       type: 'text',
       id: 'slide5_right_caption2',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 484, y: 200 },
       size: { width: 404, height: 280 },
       font: 'Arial',
@@ -210,7 +224,8 @@ export const slideJustHeadline: Slide = {
     {
       type: 'text',
       id: 'slide6_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 70, y: 40 },
       size: { width: 818, height: 100 },
       font: 'Arial',
@@ -235,7 +250,8 @@ export const slideObjectWithSignature: Slide = {
     {
       type: 'text',
       id: 'slide8_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 70, y: 40 },
       size: { width: 354, height: 160 },
       font: 'Arial',
@@ -247,7 +263,8 @@ export const slideObjectWithSignature: Slide = {
     {
       type: 'text',
       id: 'slide8_caption1',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 70, y: 200 },
       size: { width: 354, height: 280 },
       font: 'Arial',
@@ -259,7 +276,8 @@ export const slideObjectWithSignature: Slide = {
     {
       type: 'text',
       id: 'slide8_caption2',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 454, y: 90 },
       size: { width: 434, height: 390 },
       font: 'Arial',
@@ -278,7 +296,8 @@ export const slideDrawingWithCaption: Slide = {
     {
       type: 'text',
       id: 'slide9_title1',
-      content: 'Заголовок слайда',
+      content: '',
+      placeholder: 'Заголовок слайда',
       position: { x: 70, y: 40 },
       size: { width: 354, height: 160 },
       font: 'Arial',
@@ -290,7 +309,8 @@ export const slideDrawingWithCaption: Slide = {
     {
       type: 'text',
       id: 'slide9_caption1',
-      content: 'Текст слайда',
+      content: '',
+      placeholder: 'Текст слайда',
       position: { x: 70, y: 200 },
       size: { width: 354, height: 280 },
       font: 'Arial',
@@ -302,7 +322,8 @@ export const slideDrawingWithCaption: Slide = {
     {
       type: 'text',
       id: 'slide9_drawing1',
-      content: 'Вставка рисунка',
+      content: '',
+      placeholder: 'Вставка рисунка',
       position: { x: 454, y: 90 },
       size: { width: 434, height: 390 },
       font: 'Arial',

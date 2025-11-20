@@ -19,47 +19,75 @@ export function useSlidesDrag({
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    const idsEqual =
-      slides.length === localSlides.length && slides.every((s, i) => s.id === localSlides[i].id);
-    if (!idsEqual) {
-      setLocalSlides(slides);
-    }
-  }, [slides, localSlides]);
+    setLocalSlides(slides);
+  }, [slides]);
 
   const handleDragStart = (index: number) => {
     const slideId = localSlides[index].id;
+
+    // Если начинаем перетаскивать невыделенный слайд, выделяем его
     if (!selectedSlideIds.includes(slideId)) {
       setSelectedSlideIds([slideId]);
     }
+
     setDragIndex(index);
   };
 
-  const handleDragEnter = (index: number) => setHoverIndex(index);
+  const handleDragEnter = (index: number) => {
+    setHoverIndex(index);
+  };
 
   const handleDragEnd = () => {
-    if (dragIndex === null || hoverIndex === null) {
+    console.log('=== DRAG END DEBUG ===');
+    console.log('dragIndex:', dragIndex);
+    console.log('hoverIndex:', hoverIndex);
+    console.log('selectedSlideIds:', selectedSlideIds);
+    console.log(
+      'localSlides:',
+      localSlides.map((s) => s.id)
+    );
+
+    if (dragIndex === null || hoverIndex === null || dragIndex === hoverIndex) {
       setDragIndex(null);
       setHoverIndex(null);
       return;
     }
 
-    let updated = [...localSlides];
+    const updated = [...localSlides];
 
     const selectedIndexes = updated
-      .map((s, i) => (selectedSlideIds.includes(s.id) ? i : -1))
-      .filter((i) => i !== -1);
+      .map((slide, index) => (selectedSlideIds.includes(slide.id) ? index : -1))
+      .filter((index) => index !== -1)
+      .sort((a, b) => a - b);
 
-    if (selectedIndexes.includes(dragIndex)) {
-      const draggedSlides = selectedIndexes.map((i) => updated[i]);
-      updated = updated.filter((_, i) => !selectedIndexes.includes(i));
-      updated.splice(hoverIndex, 0, ...draggedSlides);
+    if (selectedIndexes.length > 1) {
+      const draggedSlides = selectedIndexes.map((index) => updated[index]);
+      const filteredSlides = updated.filter((_, index) => !selectedIndexes.includes(index));
+
+      let insertPosition = hoverIndex;
+
+      const firstSelectedIndex = selectedIndexes[0];
+
+      // Тянем вниз
+      if (firstSelectedIndex < hoverIndex) {
+        insertPosition = hoverIndex - selectedIndexes.length + 1;
+      }
+      // Тянем вверх
+      else {
+        insertPosition = hoverIndex;
+      }
+
+      filteredSlides.splice(insertPosition, 0, ...draggedSlides);
+
+      setLocalSlides(filteredSlides);
+      onSlidesReorder?.(filteredSlides);
     } else {
-      const [removed] = updated.splice(dragIndex, 1);
-      updated.splice(hoverIndex, 0, removed);
+      // Перемещаем один слайд
+      const [movedSlide] = updated.splice(dragIndex, 1);
+      updated.splice(hoverIndex, 0, movedSlide);
+      setLocalSlides(updated);
+      onSlidesReorder?.(updated);
     }
-
-    setLocalSlides(updated);
-    onSlidesReorder?.(updated);
 
     setDragIndex(null);
     setHoverIndex(null);

@@ -24,13 +24,20 @@ export default function SlidesPanel({
   onSlidesReorder,
 }: Props) {
   const { localSlides, hoverIndex, handleDragStart, handleDragEnter, handleDragEnd } =
-    useSlidesDrag({ slides, selectedSlideIds, setSelectedSlideIds, onSlidesReorder });
+    useSlidesDrag({
+      slides,
+      selectedSlideIds,
+      setSelectedSlideIds,
+      onSlidesReorder,
+    });
+
+  const displaySlides = localSlides;
 
   return (
     <div className="slides-panel">
       <h3>Слайды</h3>
       <SlidesContainer
-        slides={localSlides}
+        slides={displaySlides}
         hoverIndex={hoverIndex}
         selectedSlideId={selectedSlideId}
         selectedSlideIds={selectedSlideIds}

@@ -97,9 +97,14 @@ export default function TextElementView({
         fontWeight: el.bold ? 'bold' : 'normal',
         fontStyle: showPlaceholder ? 'italic' : el.italic ? 'italic' : 'normal',
         textDecoration: el.underline ? 'underline' : 'none',
+        // Убираем границу в preview режиме
+        border: preview ? 'none' : '1px solid #d1d5db',
       }}
     >
-      {isEditingNow ? (
+      {/* В preview режиме показываем только контент, без плейсхолдера */}
+      {preview ? (
+        el.content
+      ) : isEditingNow ? (
         <input
           autoFocus
           value={localContent}
@@ -129,6 +134,7 @@ export default function TextElementView({
         el.content
       )}
 
+      {/* В preview режиме скрываем resize handles */}
       {isSelected && !preview && (
         <>
           {(['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'] as const).map((c) => (

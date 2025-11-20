@@ -14,12 +14,14 @@ const initialPresentation: Presentation = {
 export interface EditorState {
   presentation: Presentation;
   selectedSlideId: string;
+  selectedSlideIds: string[];
   selectedElementId: string;
 }
 
 const initialState: EditorState = {
   presentation: initialPresentation,
   selectedSlideId: 'slide1',
+  selectedSlideIds: ['slide1'],
   selectedElementId: '',
 };
 
@@ -30,7 +32,16 @@ export const editorSlice = createSlice({
     selectSlide(state, action: PayloadAction<string>) {
       console.log('ID слайда:', action.payload);
       state.selectedSlideId = action.payload;
+      state.selectedSlideIds = [action.payload];
       state.selectedElementId = '';
+    },
+
+    selectSlides(state, action: PayloadAction<string[]>) {
+      if (action.payload.length > 0) {
+        state.selectedSlideIds = action.payload;
+        state.selectedSlideId = action.payload[0];
+        state.selectedElementId = '';
+      }
     },
 
     selectElement(state, action: PayloadAction<string>) {
@@ -63,12 +74,16 @@ export const editorSlice = createSlice({
       console.log('Добавлен слайд:', action.payload.id);
       state.presentation = func.addSlide(state.presentation, action.payload);
       state.selectedSlideId = action.payload.id;
+      state.selectedSlideIds = [action.payload.id];
     },
 
     removeSlide(state, action: PayloadAction<string>) {
       console.log('Удалён слайд:', action.payload);
       state.presentation = func.removeSlide(state.presentation, action.payload);
       state.selectedSlideId = state.presentation.slides[0]?.id || '';
+      state.selectedSlideIds = state.presentation.slides[0]
+        ? [state.presentation.slides[0].id]
+        : [];
       state.selectedElementId = '';
     },
 
@@ -114,6 +129,7 @@ export const editorSlice = createSlice({
         const newSlide = { ...slideMap[act], id: `slide${Date.now()}` };
         state.presentation = func.addSlide(state.presentation, newSlide);
         state.selectedSlideId = newSlide.id;
+        state.selectedSlideIds = [newSlide.id];
         return;
       }
 
@@ -227,6 +243,9 @@ export const editorSlice = createSlice({
           if (slideId) {
             state.presentation = func.removeSlide(state.presentation, slideId);
             state.selectedSlideId = state.presentation.slides[0]?.id || '';
+            state.selectedSlideIds = state.presentation.slides[0]
+              ? [state.presentation.slides[0].id]
+              : [];
             state.selectedElementId = '';
           }
           break;
@@ -262,6 +281,7 @@ export const editorSlice = createSlice({
 
 export const {
   selectSlide,
+  selectSlides,
   selectElement,
   updateSlide,
   updateTextContent,

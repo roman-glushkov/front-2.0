@@ -3,7 +3,7 @@ import { Slide } from '../../../../store/types/presentation';
 import { SlidePreview } from './Preview';
 import { SlideNumber } from './Number';
 
-interface Props {
+interface RowProps {
   slide: Slide;
   index: number;
   scale: number;
@@ -25,7 +25,7 @@ export function SlideRow({
   onDragStart,
   onDragEnter,
   onDragEnd,
-}: Props) {
+}: RowProps) {
   return (
     <div
       className={`slide-row ${selected ? 'selected' : ''} ${hovered ? 'hovered' : ''}`}

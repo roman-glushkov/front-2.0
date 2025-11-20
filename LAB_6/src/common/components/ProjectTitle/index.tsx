@@ -1,28 +1,32 @@
 import React from 'react';
-import { Presentation } from '../../../store/types/presentation';
 import './styles.css';
+import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { changeTitle } from '../../../store/editorSlice';
 
-interface Props {
-  pres: Presentation;
-  onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onTitleCommit: (e: React.FocusEvent<HTMLInputElement>) => void;
-  onTitleKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  selSlideId: string;
-}
+export default function ProjectTitle() {
+  const dispatch = useAppDispatch();
 
-export default function ProjectTitle({
-  pres,
-  onTitleChange,
-  onTitleCommit,
-  onTitleKeyDown,
-}: Props) {
+  const title = useAppSelector((state) => state.editor.presentation.title);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(changeTitle(e.target.value));
+  };
+
+  const handleCommit = () => {};
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
+    }
+  };
+
   return (
     <div className="presentation-info top">
       <input
-        value={pres.title}
-        onChange={onTitleChange}
-        onBlur={onTitleCommit}
-        onKeyDown={onTitleKeyDown}
+        value={title}
+        onChange={handleChange}
+        onBlur={handleCommit}
+        onKeyDown={handleKeyDown}
         placeholder="Введите название презентации"
       />
     </div>

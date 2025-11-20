@@ -1,6 +1,8 @@
 import React from 'react';
 import Workspace from '../../Workspace';
 import { Slide } from '../../../../store/types/presentation';
+import { useAppDispatch } from '../../../../store/hooks';
+import { handleAction } from '../../../../store/editorSlice';
 
 interface Props {
   slide: Slide;
@@ -8,6 +10,14 @@ interface Props {
 }
 
 export function SlidePreview({ slide, scale }: Props) {
+  const dispatch = useAppDispatch();
+
+  // Оборачиваем handleAction в updater для Workspace
+  const updateSlide = (updater: (s: Slide) => Slide) => {
+    const updatedSlide = updater(slide);
+    dispatch(handleAction(`update slide ${updatedSlide.id}`));
+  };
+
   return (
     <div className="slide-preview-wrapper">
       <div
@@ -24,7 +34,7 @@ export function SlidePreview({ slide, scale }: Props) {
           slide={slide}
           selElId=""
           setSelElId={() => {}}
-          updateSlide={() => {}}
+          updateSlide={updateSlide}
           onElementClick={() => {}}
           preview
         />

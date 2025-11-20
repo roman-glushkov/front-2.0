@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
-import { SlideRow } from './Row';
 import { selectSlide, selectSlides } from '../../../../store/editorSlice';
+import { SlideRow } from './Row';
 import { useSlidesDrag } from '../hooks/useSlidesDrag';
 
 export default function SlidesContainer() {

@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import editorReducer from './editorSlice';
+import toolbarReducer from './toolbarSlice';
 
 export const store = configureStore({
   reducer: {
     editor: editorReducer,
+    toolbar: toolbarReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

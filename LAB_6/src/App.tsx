@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from './store';
-import { selectElement, handleAction, updateSlide } from './store/editorSlice';
+import { selectElement, updateSlide } from './store/editorSlice';
 import ProjectTitle from './common/components/ProjectTitle';
 import Toolbar from './common/components/Toolbar';
 import SlidesPanel from './common/components/SlidesPanel';
@@ -15,12 +15,10 @@ function App() {
   const selElId = useSelector((state: RootState) => state.editor.selectedElementId);
   const slide = pres.slides.find((s) => s.id === selSlideId);
 
-  const onAction = (action: string) => dispatch(handleAction(action));
-
   return (
     <div className="container">
       <ProjectTitle />
-      <Toolbar onAction={onAction} />
+      <Toolbar />
       <div className="main-content">
         <SlidesPanel />
         <Workspace

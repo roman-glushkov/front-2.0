@@ -1,18 +1,16 @@
 import React from 'react';
-import { TextOption } from '../constants/textOptions';
 
-interface Props {
-  options: TextOption[];
+export interface Props {
+  options: string[];
   onSelect: (key: string) => void;
-  style?: React.CSSProperties;
 }
 
-export default function TextOptionsPopup({ options, onSelect, style }: Props) {
+export default function TextOptionsPopup({ options, onSelect }: Props) {
   return (
-    <div className="text-options-popup" style={style}>
+    <div className="text-options-popup">
       {options.map((opt) => (
-        <button key={opt.key} className="text-option-button" onClick={() => onSelect(opt.key)}>
-          {opt.label}
+        <button key={opt} onClick={() => onSelect(opt)}>
+          {opt}
         </button>
       ))}
     </div>

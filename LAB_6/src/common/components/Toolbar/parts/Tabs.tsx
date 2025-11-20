@@ -1,24 +1,23 @@
 import React from 'react';
-import { GroupKey } from '../hooks/useState';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { setActiveGroup } from '../../../../store/toolbarSlice';
 import { TAB_TITLES } from '../constants/config';
 
-interface Props {
-  activeGroup: GroupKey;
-  setActiveGroup: (g: GroupKey) => void;
-  resetPopups: () => void;
-}
+export default function ToolbarTabs() {
+  const dispatch = useAppDispatch();
+  const activeGroup = useAppSelector((state) => state.toolbar.activeGroup);
 
-export default function ToolbarTabs({ activeGroup, setActiveGroup, resetPopups }: Props) {
+  const handleTabClick = (key: string) => {
+    dispatch(setActiveGroup(key)); // уже сбрасывает activeTextOption
+  };
+
   return (
     <div className="toolbar-tabs">
       {TAB_TITLES.map(({ key, name }) => (
         <button
           key={key}
           className={`toolbar-tab ${activeGroup === key ? 'active' : ''}`}
-          onClick={() => {
-            setActiveGroup(key);
-            resetPopups();
-          }}
+          onClick={() => handleTabClick(key)}
         >
           {name}
         </button>

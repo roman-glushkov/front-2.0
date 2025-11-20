@@ -1,4 +1,4 @@
-import { GroupKey } from '../hooks/useState';
+export type GroupKey = 'slides' | 'text' | 'elements' | 'design';
 
 export interface GroupButton {
   label: string;

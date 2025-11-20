@@ -1,104 +1,91 @@
-import React, { useState } from 'react';
-import { GroupKey } from '../hooks/useState';
-import { GROUPS } from '../constants/config';
-import TemplatePopup from './TemplatePopup';
+import { GROUPS, GroupButton, GroupKey } from '../constants/config';
 import ColorSection from './ColorSection';
 import TextOptionsPopup from './TextOptionsPopup';
 import TextAlignPopup from './TextAlignPopup';
+import TemplatePopup from './TemplatePopup';
 import { TEXT_SIZE_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants/textOptions';
+import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
+import { handleAction } from '../../../../store/editorSlice';
+import { setActiveTextOption } from '../../../../store/toolbarSlice';
 
-interface Props {
-  activeGroup: GroupKey;
-  showTemplates: boolean;
-  showTextColorPicker: boolean;
-  showFillColorPicker: boolean;
-  showBackgroundColorPicker: boolean;
-  handleAddSlideClick: () => void;
-  handleTextColorClick: () => void;
-  handleFillColorClick: () => void;
-  handleBackgroundColorClick: () => void;
-  handleTemplateSelect: (template: string) => void;
-  handleColorSelect: (type: 'text' | 'fill' | 'background', color: string) => void;
-  handleTextOptionSelect: (key: string) => void;
-  onAction: (action: string) => void;
-}
-
-export default function ToolbarGroup({
-  activeGroup,
-  showTemplates,
-  showTextColorPicker,
-  showFillColorPicker,
-  showBackgroundColorPicker,
-  handleAddSlideClick,
-  handleTextColorClick,
-  handleFillColorClick,
-  handleBackgroundColorClick,
-  handleTemplateSelect,
-  handleColorSelect,
-  handleTextOptionSelect,
-  onAction,
-}: Props) {
-  const [activeTextOption, setActiveTextOption] = useState<string | null>(null);
+export default function ToolbarGroup() {
+  const dispatch = useAppDispatch();
+  const activeGroup = useAppSelector((state) => state.toolbar.activeGroup) as GroupKey;
+  const activeTextOption = useAppSelector((state) => state.toolbar.activeTextOption);
 
   const handleButtonClick = (action: string) => {
-    if (action === 'ADD_SLIDE') handleAddSlideClick();
-    else if (action === 'TEXT_COLOR') handleTextColorClick();
-    else if (action === 'SHAPE_FILL') handleFillColorClick();
-    else if (action === 'SLIDE_BACKGROUND') handleBackgroundColorClick();
-    else if (action === 'TEXT_SIZE' || action === 'TEXT_ALIGN' || action === 'TEXT_LINE_HEIGHT') {
-      setActiveTextOption(activeTextOption === action ? null : action);
+    // Для кнопок, которые показывают всплывающие меню
+    if (
+      [
+        'ADD_SLIDE',
+        'TEXT_COLOR',
+        'SHAPE_FILL',
+        'SLIDE_BACKGROUND',
+        'TEXT_SIZE',
+        'TEXT_ALIGN',
+        'TEXT_LINE_HEIGHT',
+      ].includes(action)
+    ) {
+      dispatch(setActiveTextOption(activeTextOption === action ? null : action));
     } else {
-      onAction(action);
+      // Для обычных действий
+      dispatch(handleAction(action));
     }
   };
 
   return (
     <div className="toolbar-group">
-      {GROUPS[activeGroup].map(({ label, action }) => (
-        <div key={action} className="toolbar-button-wrapper">
-          <button onClick={() => handleButtonClick(action)}>{label}</button>
+      {GROUPS[activeGroup].map((btn: GroupButton) => (
+        <div key={btn.action} className="toolbar-button-wrapper">
+          <button onClick={() => handleButtonClick(btn.action)}>{btn.label}</button>
 
-          {action === 'ADD_SLIDE' && showTemplates && (
-            <TemplatePopup onSelect={handleTemplateSelect} />
+          {/* Меню добавления слайдов */}
+          {btn.action === 'ADD_SLIDE' && activeTextOption === 'ADD_SLIDE' && <TemplatePopup />}
+
+          {/* Цветовые меню */}
+          {btn.action === 'TEXT_COLOR' && activeTextOption === 'TEXT_COLOR' && (
+            <ColorSection type="text" />
+          )}
+          {btn.action === 'SHAPE_FILL' && activeTextOption === 'SHAPE_FILL' && (
+            <ColorSection type="fill" />
+          )}
+          {btn.action === 'SLIDE_BACKGROUND' && activeTextOption === 'SLIDE_BACKGROUND' && (
+            <ColorSection type="background" />
           )}
 
-          {action === 'TEXT_COLOR' && showTextColorPicker && (
-            <ColorSection type="text" onSelect={handleColorSelect} />
-          )}
-
-          {action === 'SHAPE_FILL' && showFillColorPicker && (
-            <ColorSection type="fill" onSelect={handleColorSelect} />
-          )}
-
-          {action === 'SLIDE_BACKGROUND' && showBackgroundColorPicker && (
-            <ColorSection type="background" onSelect={handleColorSelect} />
-          )}
-
-          {action === 'TEXT_SIZE' && activeTextOption === action && (
+          {/* Размер текста */}
+          {btn.action === 'TEXT_SIZE' && activeTextOption === 'TEXT_SIZE' && (
             <TextOptionsPopup
-              options={TEXT_SIZE_OPTIONS}
-              onSelect={(key) => {
-                handleTextOptionSelect(key);
-                setActiveTextOption(null);
+              options={TEXT_SIZE_OPTIONS.map((o) => o.key)}
+              onSelect={(key: string) => {
+                dispatch(handleAction(`TEXT_SIZE:${key}`));
+                dispatch(setActiveTextOption(null));
               }}
             />
           )}
 
-          {action === 'TEXT_ALIGN' && activeTextOption === action && (
+          {/* Выравнивание */}
+          {btn.action === 'TEXT_ALIGN' && activeTextOption === 'TEXT_ALIGN' && (
             <TextAlignPopup
-              onSelect={(key) => {
-                handleTextOptionSelect(key);
-                setActiveTextOption(null);
+              onSelect={(key: string) => {
+                // Определяем тип выравнивания по ключу
+                if (['left', 'right', 'center', 'justify'].includes(key)) {
+                  dispatch(handleAction(`TEXT_ALIGN_HORIZONTAL:${key}`));
+                } else if (['top', 'middle', 'bottom'].includes(key)) {
+                  dispatch(handleAction(`TEXT_ALIGN_VERTICAL:${key}`));
+                }
+                dispatch(setActiveTextOption(null));
               }}
             />
           )}
 
-          {action === 'TEXT_LINE_HEIGHT' && activeTextOption === action && (
+          {/* Интервал */}
+          {btn.action === 'TEXT_LINE_HEIGHT' && activeTextOption === 'TEXT_LINE_HEIGHT' && (
             <TextOptionsPopup
-              options={LINE_HEIGHT_OPTIONS}
-              onSelect={(key) => {
-                handleTextOptionSelect(key);
-                setActiveTextOption(null);
+              options={LINE_HEIGHT_OPTIONS.map((o) => o.key)}
+              onSelect={(key: string) => {
+                dispatch(handleAction(`TEXT_LINE_HEIGHT:${key}`));
+                dispatch(setActiveTextOption(null));
               }}
             />
           )}

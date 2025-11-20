@@ -1,15 +1,25 @@
 import React from 'react';
 import { TEMPLATES } from '../constants/templates';
+import { useAppDispatch } from '../../../../store/hooks';
+import { handleAction } from '../../../../store/editorSlice';
+import { setActiveTextOption } from '../../../../store/toolbarSlice'; // Добавьте этот импорт
 
-interface Props {
-  onSelect: (templateKey: string) => void;
-}
+export default function TemplatePopup() {
+  const dispatch = useAppDispatch();
 
-export default function TemplatePopup({ onSelect }: Props) {
+  const handleSelect = (templateKey: string) => {
+    dispatch(handleAction(templateKey));
+    dispatch(setActiveTextOption(null)); // Закрываем popup после выбора
+  };
+
   return (
     <div className="template-popup">
       {TEMPLATES.map((template) => (
-        <div key={template.key} className="template-item" onClick={() => onSelect(template.key)}>
+        <div
+          key={template.key}
+          className="template-item"
+          onClick={() => handleSelect(template.key)}
+        >
           <div className="template-preview">
             <img
               src={template.preview}
@@ -18,9 +28,7 @@ export default function TemplatePopup({ onSelect }: Props) {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 const fallback = target.nextElementSibling as HTMLElement;
-                if (fallback) {
-                  fallback.style.display = 'flex';
-                }
+                if (fallback) fallback.style.display = 'flex';
               }}
             />
             <div className="template-fallback">

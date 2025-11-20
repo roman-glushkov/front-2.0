@@ -1,92 +1,116 @@
 import React, { useState, useEffect } from 'react';
-import { TextElement as TEl, SlideElement } from '../../../../store/types/presentation';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../../store';
+import { updateTextContent, selectElement, updateSlide } from '../../../../store/editorSlice';
+import { TextElement as TextElementType } from '../../../../store/types/presentation';
 import ResizeHandle from './ResizeHandle';
+import useDrag from '../hooks/useDrag';
+import useResize from '../hooks/useResize';
 
 interface Props {
-  el: TEl;
-  isSelected: boolean;
-  isEditing: boolean;
+  elementId: string;
   preview: boolean;
-  setSelElId: (id: string) => void;
-  startDrag: (e: React.PointerEvent, el: SlideElement) => void;
-  startResize: (
-    e: React.PointerEvent,
-    el: SlideElement,
-    corner: 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w'
-  ) => void;
-  handleTextChange: (e: React.ChangeEvent<HTMLInputElement>, elId: string) => void;
-  handleTextCommit: (e: React.FocusEvent<HTMLInputElement>, elId: string) => void;
-  handleTextKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, elId: string) => void;
 }
 
-export default function TextElementView({
-  el,
-  isSelected,
-  preview,
-  setSelElId,
-  startDrag,
-  startResize,
-  handleTextChange,
-  handleTextCommit,
-  handleTextKeyDown,
-}: Props) {
-  const [editingElIdLocal, setEditingElIdLocal] = useState('');
-  const [localContent, setLocalContent] = useState(el.content);
-  const isEditingNow = editingElIdLocal === el.id && el.type === 'text';
+export default function TextElementView({ elementId, preview }: Props) {
+  const dispatch = useDispatch();
 
-  // Синхронизируем локальное состояние с Redux состоянием
+  // Все данные из store
+  const element = useSelector((state: RootState) => {
+    const slide = state.editor.presentation.slides.find((s) =>
+      s.elements.some((el) => el.id === elementId)
+    );
+    return slide?.elements.find((el) => el.id === elementId) as TextElementType | undefined;
+  });
+
+  const isSelected = useSelector(
+    (state: RootState) => state.editor.selectedElementId === elementId
+  );
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [localContent, setLocalContent] = useState(element?.content || '');
+
+  const startDrag = useDrag({
+    preview,
+    setSelElId: (id: string) => dispatch(selectElement(id)),
+    bringToFront: () => {}, // Убрали неиспользуемый параметр id
+    updateSlide: (updater) => dispatch(updateSlide(updater)),
+  });
+
+  const startResize = useResize({
+    preview,
+    updateSlide: (updater) => dispatch(updateSlide(updater)),
+  });
+
+  // Исправлен useEffect
   useEffect(() => {
-    setLocalContent(el.content);
-  }, [el.content]);
+    if (element) {
+      setLocalContent(element.content);
+    }
+  }, [element]);
 
-  const showPlaceholder = !el.content && el.placeholder && !isEditingNow;
+  if (!element || element.type !== 'text') return null;
 
-  const handleLocalTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newContent = e.target.value;
-    setLocalContent(newContent);
-    handleTextChange(e, el.id);
+  const showPlaceholder = !element.content && element.placeholder && !isEditing;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(selectElement(elementId));
   };
 
-  const handleLocalTextCommit = (e: React.FocusEvent<HTMLInputElement>) => {
-    handleTextCommit(e, el.id);
-    setEditingElIdLocal('');
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newContent = e.target.value;
+    setLocalContent(newContent);
+    dispatch(
+      updateTextContent({
+        elementId: elementId,
+        content: newContent,
+      })
+    );
+  };
+
+  const handleTextCommit = () => {
+    setIsEditing(false);
+  };
+
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.currentTarget.blur();
+    }
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!preview) {
-      setLocalContent(el.content);
-      setEditingElIdLocal(el.id);
+      setLocalContent(element.content);
+      setIsEditing(true);
     }
   };
 
   return (
     <div
       className={`element ${isSelected ? 'selected' : ''}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelElId(el.id);
-      }}
+      onClick={handleClick}
       onDoubleClick={handleDoubleClick}
-      onPointerDown={(e) => startDrag(e, el)}
+      onPointerDown={(e) => startDrag(e, element)}
       style={{
         position: 'absolute',
-        left: el.position.x,
-        top: el.position.y,
-        width: el.size.width,
-        height: el.size.height,
-        fontFamily: el.font,
-        fontSize: `${el.fontSize}px`,
-        color: showPlaceholder ? '#999' : el.color || '#1f2937',
-        backgroundColor: el.backgroundColor || 'transparent',
-        textAlign: el.align || 'left',
-        lineHeight: el.lineHeight || 1.2,
+        left: element.position.x,
+        top: element.position.y,
+        width: element.size.width,
+        height: element.size.height,
+        fontFamily: element.font,
+        fontSize: `${element.fontSize}px`,
+        color: showPlaceholder ? '#999' : element.color || '#1f2937',
+        backgroundColor: element.backgroundColor || 'transparent',
+        textAlign: element.align || 'left',
+        lineHeight: element.lineHeight || 1.2,
         display: 'flex',
         flexDirection: 'column',
         justifyContent:
-          el.verticalAlign === 'top'
+          element.verticalAlign === 'top'
             ? 'flex-start'
-            : el.verticalAlign === 'middle'
+            : element.verticalAlign === 'middle'
               ? 'center'
               : 'flex-end',
         cursor: preview ? 'default' : 'grab',
@@ -94,51 +118,48 @@ export default function TextElementView({
         padding: 4,
         boxSizing: 'border-box',
         whiteSpace: 'pre-wrap',
-        fontWeight: el.bold ? 'bold' : 'normal',
-        fontStyle: showPlaceholder ? 'italic' : el.italic ? 'italic' : 'normal',
-        textDecoration: el.underline ? 'underline' : 'none',
-        // Убираем границу в preview режиме
+        fontWeight: element.bold ? 'bold' : 'normal',
+        fontStyle: showPlaceholder ? 'italic' : element.italic ? 'italic' : 'normal',
+        textDecoration: element.underline ? 'underline' : 'none',
         border: preview ? 'none' : '1px solid #d1d5db',
       }}
     >
-      {/* В preview режиме показываем только контент, без плейсхолдера */}
       {preview ? (
-        el.content
-      ) : isEditingNow ? (
+        element.content
+      ) : isEditing ? (
         <input
           autoFocus
           value={localContent}
-          placeholder={el.placeholder}
-          onChange={handleLocalTextChange}
-          onKeyDown={(e) => handleTextKeyDown(e, el.id)}
-          onBlur={handleLocalTextCommit}
+          placeholder={element.placeholder}
+          onChange={handleTextChange}
+          onKeyDown={handleTextKeyDown}
+          onBlur={handleTextCommit}
           style={{
             width: '100%',
             height: '100%',
-            color: el.color || '#1f2937',
-            backgroundColor: el.backgroundColor || 'transparent',
+            color: element.color || '#1f2937',
+            backgroundColor: element.backgroundColor || 'transparent',
             border: 'none',
             outline: 'none',
-            textAlign: el.align || 'left',
-            fontFamily: el.font,
-            fontSize: `${el.fontSize}px`,
-            lineHeight: el.lineHeight || 1.2,
-            fontWeight: el.bold ? 'bold' : 'normal',
-            fontStyle: el.italic ? 'italic' : 'normal',
-            textDecoration: el.underline ? 'underline' : 'none',
+            textAlign: element.align || 'left',
+            fontFamily: element.font,
+            fontSize: `${element.fontSize}px`,
+            lineHeight: element.lineHeight || 1.2,
+            fontWeight: element.bold ? 'bold' : 'normal',
+            fontStyle: element.italic ? 'italic' : 'normal',
+            textDecoration: element.underline ? 'underline' : 'none',
           }}
         />
       ) : showPlaceholder ? (
-        el.placeholder
+        element.placeholder
       ) : (
-        el.content
+        element.content
       )}
 
-      {/* В preview режиме скрываем resize handles */}
       {isSelected && !preview && (
         <>
           {(['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'] as const).map((c) => (
-            <ResizeHandle key={c} corner={c} onPointerDown={(e) => startResize(e, el, c)} />
+            <ResizeHandle key={c} corner={c} onPointerDown={(e) => startResize(e, element, c)} />
           ))}
         </>
       )}

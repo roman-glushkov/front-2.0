@@ -1,42 +1,62 @@
 import React from 'react';
-import { ImageElement as IEl, SlideElement } from '../../../../store/types/presentation';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../../store';
+import { selectElement, updateSlide } from '../../../../store/editorSlice';
+import { ImageElement as ImageElementType } from '../../../../store/types/presentation';
 import ResizeHandle from './ResizeHandle';
+import useDrag from '../hooks/useDrag';
+import useResize from '../hooks/useResize';
 
 interface Props {
-  el: IEl;
-  isSelected: boolean;
+  elementId: string;
   preview: boolean;
-  setSelElId: (id: string) => void;
-  startDrag: (e: React.PointerEvent, el: SlideElement) => void;
-  startResize: (
-    e: React.PointerEvent,
-    el: SlideElement,
-    corner: 'nw' | 'ne' | 'sw' | 'se' | 'n' | 's' | 'e' | 'w'
-  ) => void;
 }
 
-export default function ImageElementView({
-  el,
-  isSelected,
-  preview,
-  setSelElId,
-  startDrag,
-  startResize,
-}: Props) {
+export default function ImageElementView({ elementId, preview }: Props) {
+  const dispatch = useDispatch();
+
+  // Все данные из store
+  const element = useSelector((state: RootState) => {
+    const slide = state.editor.presentation.slides.find((s) =>
+      s.elements.some((el) => el.id === elementId)
+    );
+    return slide?.elements.find((el) => el.id === elementId) as ImageElementType | undefined;
+  });
+
+  const isSelected = useSelector(
+    (state: RootState) => state.editor.selectedElementId === elementId
+  );
+
+  const startDrag = useDrag({
+    preview,
+    setSelElId: (id: string) => dispatch(selectElement(id)),
+    bringToFront: () => {}, // Убрали неиспользуемый параметр id
+    updateSlide: (updater) => dispatch(updateSlide(updater)),
+  });
+
+  const startResize = useResize({
+    preview,
+    updateSlide: (updater) => dispatch(updateSlide(updater)),
+  });
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(selectElement(elementId));
+  };
+
+  if (!element || element.type !== 'image') return null;
+
   return (
     <div
       className={`element ${isSelected ? 'selected' : ''}`}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelElId(el.id);
-      }}
-      onPointerDown={(e) => startDrag(e, el)}
+      onClick={handleClick}
+      onPointerDown={(e) => startDrag(e, element)}
       style={{
         position: 'absolute',
-        left: el.position.x,
-        top: el.position.y,
-        width: el.size.width,
-        height: el.size.height,
+        left: element.position.x,
+        top: element.position.y,
+        width: element.size.width,
+        height: element.size.height,
         cursor: preview ? 'default' : 'grab',
         userSelect: 'none',
         display: 'flex',
@@ -46,12 +66,12 @@ export default function ImageElementView({
       }}
     >
       <img
-        src={el.src}
+        src={element.src}
         alt="Изображение"
         draggable={false}
         style={{
-          width: el.size.width === 0 ? 'auto' : '100%',
-          height: el.size.height === 0 ? 'auto' : '100%',
+          width: element.size.width === 0 ? 'auto' : '100%',
+          height: element.size.height === 0 ? 'auto' : '100%',
           objectFit: 'fill',
           userSelect: 'none',
         }}
@@ -59,7 +79,7 @@ export default function ImageElementView({
       {isSelected && !preview && (
         <>
           {(['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'] as const).map((c) => (
-            <ResizeHandle key={c} corner={c} onPointerDown={(e) => startResize(e, el, c)} />
+            <ResizeHandle key={c} corner={c} onPointerDown={(e) => startResize(e, element, c)} />
           ))}
         </>
       )}

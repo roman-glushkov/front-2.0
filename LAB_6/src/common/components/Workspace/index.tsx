@@ -1,57 +1,29 @@
-// src/common/components/Workspace/index.tsx
 import React from 'react';
-import { useDispatch } from 'react-redux';
-import { Slide, SlideElement, TextElement, ImageElement } from '../../../store/types/presentation';
-import { updateTextContent } from '../../../store/editorSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import { selectElement } from '../../../store/editorSlice';
+import { Slide } from '../../../store/types/presentation';
 import './styles.css';
 
 import TextElementView from './parts/TextElement';
 import ImageElementView from './parts/ImageElement';
-import useDrag from './hooks/useDrag';
-import useResize from './hooks/useResize';
-import bringToFront from './utils/bringToFront';
 
 interface Props {
-  slide?: Slide;
-  selElId: string;
-  onElementClick: (elementId: string) => void;
-  setSelElId: (elementId: string) => void;
-  updateSlide: (updater: (s: Slide) => Slide) => void;
   preview?: boolean;
-  // Убраны handleTextChange, handleTextCommit, handleTextKeyDown
 }
 
-export default function Workspace({ slide, selElId, setSelElId, updateSlide, preview }: Props) {
+export default function Workspace({ preview }: Props) {
   const dispatch = useDispatch();
+  const presentation = useSelector((state: RootState) => state.editor.presentation);
+  const selectedSlideId = useSelector((state: RootState) => state.editor.selectedSlideId);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>, elId: string) => {
-    console.log('handleTextChange called:', e.target.value, elId);
-    dispatch(
-      updateTextContent({
-        elementId: elId,
-        content: e.target.value,
-      })
-    );
-  };
+  const slide = presentation.slides.find((s: Slide) => s.id === selectedSlideId);
 
-  const handleTextCommit = (e: React.FocusEvent<HTMLInputElement>, elId: string) => {
-    console.log('handleTextCommit called:', e.target.value, elId);
-  };
-
-  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur();
+  const handleWorkspaceClick = () => {
+    if (!preview) {
+      dispatch(selectElement(''));
     }
   };
-
-  const startDrag = useDrag({
-    preview,
-    setSelElId,
-    bringToFront: (id: string) => bringToFront(updateSlide, id),
-    updateSlide,
-  });
-
-  const startResize = useResize({ preview, updateSlide });
 
   return (
     <div className="workspace-panel">
@@ -64,43 +36,15 @@ export default function Workspace({ slide, selElId, setSelElId, updateSlide, pre
               position: 'relative',
               overflow: 'hidden',
             }}
-            onClick={() => {
-              if (!preview) setSelElId('');
-            }}
+            onClick={handleWorkspaceClick}
           >
-            {slide.elements.map((el: SlideElement) => {
-              const isSelected = selElId === el.id;
-
+            {slide.elements.map((el) => {
               if (el.type === 'text') {
-                return (
-                  <TextElementView
-                    key={el.id}
-                    el={el as TextElement}
-                    isSelected={isSelected}
-                    isEditing={false}
-                    preview={!!preview}
-                    setSelElId={setSelElId}
-                    startDrag={startDrag}
-                    startResize={startResize}
-                    handleTextChange={handleTextChange}
-                    handleTextCommit={handleTextCommit}
-                    handleTextKeyDown={handleTextKeyDown}
-                  />
-                );
+                return <TextElementView key={el.id} elementId={el.id} preview={!!preview} />;
               }
 
               if (el.type === 'image') {
-                return (
-                  <ImageElementView
-                    key={el.id}
-                    el={el as ImageElement}
-                    isSelected={isSelected}
-                    preview={!!preview}
-                    setSelElId={setSelElId}
-                    startDrag={startDrag}
-                    startResize={startResize}
-                  />
-                );
+                return <ImageElementView key={el.id} elementId={el.id} preview={!!preview} />;
               }
 
               return null;

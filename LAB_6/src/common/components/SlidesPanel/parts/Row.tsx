@@ -1,6 +1,6 @@
 import React from 'react';
 import { Slide } from '../../../../store/types/presentation';
-import { SlidePreview } from './Preview';
+import { Preview } from './Preview';
 import { SlideNumber } from './Number';
 
 interface RowProps {
@@ -18,7 +18,6 @@ interface RowProps {
 export function SlideRow({
   slide,
   index,
-  scale,
   selected,
   hovered,
   onClick,
@@ -36,7 +35,7 @@ export function SlideRow({
       onDragEnd={onDragEnd}
     >
       <SlideNumber number={index + 1} />
-      <SlidePreview slide={slide} scale={scale} />
+      <Preview slide={slide} scale={0.2} />
     </div>
   );
 }

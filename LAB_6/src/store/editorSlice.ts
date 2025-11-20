@@ -16,6 +16,7 @@ export interface EditorState {
   selectedSlideId: string;
   selectedSlideIds: string[];
   selectedElementId: string;
+  slides: Slide[];
 }
 
 const initialState: EditorState = {
@@ -23,6 +24,7 @@ const initialState: EditorState = {
   selectedSlideId: 'slide1',
   selectedSlideIds: ['slide1'],
   selectedElementId: '',
+  slides: initialPresentation.slides,
 };
 
 export const editorSlice = createSlice({

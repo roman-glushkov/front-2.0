@@ -83,6 +83,10 @@
   border: 2px solid transparent;
   transition: all 0.2s ease;
   flex-shrink: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .slide-preview-wrapper:hover {
@@ -97,13 +101,11 @@
 }
 
 .slide-preview {
-  transform-origin: top left;
-  transform: scale(0.25);
   width: 960px;
   height: 540px;
-  pointer-events: none;
+  position: relative;
+  overflow: hidden;
 }
-
 .slide-preview .workspace-panel > h3 {
   display: none;
 }

@@ -35,7 +35,7 @@ export function SlideRow({
       onDragEnd={onDragEnd}
     >
       <SlideNumber number={index + 1} />
-      <Preview slide={slide} scale={0.2} />
+      <Preview slide={slide} scale={0.25} />
     </div>
   );
 }

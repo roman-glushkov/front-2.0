@@ -6,34 +6,58 @@ type UpdateSlideFn = (updater: (s: Slide) => Slide) => void;
 
 interface Args {
   preview?: boolean;
-  setSelElId: (id: string) => void;
-  bringToFront: (id: string) => void;
+  setSelElId?: (id: string) => void;
+  bringToFront?: (id: string) => void;
   updateSlide: UpdateSlideFn;
 }
 
 export default function useDrag({ preview, setSelElId, bringToFront, updateSlide }: Args) {
   const dragStateRef = useRef<{
-    draggingId: string;
+    draggingIds: string[];
     startX: number;
     startY: number;
-    origX: number;
-    origY: number;
+    origPositions: Map<string, { x: number; y: number }>;
     raf?: number;
   } | null>(null);
 
-  const startDrag = (e: React.PointerEvent, el: SlideElement) => {
+  const startDrag = (
+    e: React.PointerEvent,
+    el: SlideElement,
+    selectedElementIds: string[] = [],
+    getAllElements: () => SlideElement[] // Новая функция для получения всех элементов
+  ) => {
     if (preview) return;
     e.stopPropagation();
 
-    setSelElId(el.id);
-    bringToFront(el.id);
+    // Определяем какие элементы будем перемещать
+    const elementsToDrag = selectedElementIds.includes(el.id) ? selectedElementIds : [el.id];
+
+    // Если текущий элемент не выделен, выделяем его
+    if (!selectedElementIds.includes(el.id)) {
+      setSelElId?.(el.id);
+    }
+
+    // Поднимаем все выделенные элементы на передний план
+    elementsToDrag.forEach((id) => bringToFront?.(id));
+
+    // Получаем позиции всех выделенных элементов
+    const allElements = getAllElements();
+    const origPositions = new Map();
+
+    allElements.forEach((element) => {
+      if (elementsToDrag.includes(element.id)) {
+        origPositions.set(element.id, {
+          x: element.position.x,
+          y: element.position.y,
+        });
+      }
+    });
 
     const ds = {
-      draggingId: el.id,
+      draggingIds: elementsToDrag,
       startX: e.clientX,
       startY: e.clientY,
-      origX: el.position.x,
-      origY: el.position.y,
+      origPositions,
     };
     dragStateRef.current = ds;
 
@@ -48,11 +72,21 @@ export default function useDrag({ preview, setSelElId, bringToFront, updateSlide
       cur.raf = requestAnimationFrame(() => {
         updateSlide((s: Slide) => ({
           ...s,
-          elements: s.elements.map((item) =>
-            item.id === cur.draggingId
-              ? { ...item, position: { x: cur.origX + dx, y: cur.origY + dy } }
-              : item
-          ),
+          elements: s.elements.map((item) => {
+            if (cur.draggingIds.includes(item.id)) {
+              const origPos = cur.origPositions.get(item.id);
+              if (origPos) {
+                return {
+                  ...item,
+                  position: {
+                    x: origPos.x + dx,
+                    y: origPos.y + dy,
+                  },
+                };
+              }
+            }
+            return item;
+          }),
         }));
       });
     };

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
-import { updateTextContent, selectElement, updateSlide } from '../../../../store/editorSlice';
-import { TextElement as TextElementType } from '../../../../store/types/presentation';
+import { updateTextContent, updateSlide } from '../../../../store/editorSlice';
+import { TextElement as TextElementType, SlideElement } from '../../../../store/types/presentation';
 import ResizeHandle from './ResizeHandle';
 import useDrag from '../hooks/useDrag';
 import useResize from '../hooks/useResize';
@@ -10,12 +10,20 @@ import useResize from '../hooks/useResize';
 interface Props {
   elementId: string;
   preview: boolean;
+  selectedElementIds: string[];
+  onElementClick: (e: React.MouseEvent, elementId: string) => void;
+  getAllElements: () => SlideElement[];
 }
 
-export default function TextElementView({ elementId, preview }: Props) {
+export default function TextElementView({
+  elementId,
+  preview,
+  selectedElementIds,
+  onElementClick,
+  getAllElements,
+}: Props) {
   const dispatch = useDispatch();
 
-  // Все данные из store
   const element = useSelector((state: RootState) => {
     const slide = state.editor.presentation.slides.find((s) =>
       s.elements.some((el) => el.id === elementId)
@@ -23,17 +31,15 @@ export default function TextElementView({ elementId, preview }: Props) {
     return slide?.elements.find((el) => el.id === elementId) as TextElementType | undefined;
   });
 
-  const isSelected = useSelector(
-    (state: RootState) => state.editor.selectedElementId === elementId
-  );
+  const isSelected = selectedElementIds.includes(elementId);
 
   const [isEditing, setIsEditing] = useState(false);
   const [localContent, setLocalContent] = useState(element?.content || '');
 
   const startDrag = useDrag({
     preview,
-    setSelElId: (id: string) => dispatch(selectElement(id)),
-    bringToFront: () => {}, // Убрали неиспользуемый параметр id
+    setSelElId: () => {},
+    bringToFront: () => {},
     updateSlide: (updater) => dispatch(updateSlide(updater)),
   });
 
@@ -42,7 +48,6 @@ export default function TextElementView({ elementId, preview }: Props) {
     updateSlide: (updater) => dispatch(updateSlide(updater)),
   });
 
-  // Исправлен useEffect
   useEffect(() => {
     if (element) {
       setLocalContent(element.content);
@@ -53,32 +58,6 @@ export default function TextElementView({ elementId, preview }: Props) {
 
   const showPlaceholder = !element.content && element.placeholder && !isEditing;
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    dispatch(selectElement(elementId));
-  };
-
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newContent = e.target.value;
-    setLocalContent(newContent);
-    dispatch(
-      updateTextContent({
-        elementId: elementId,
-        content: newContent,
-      })
-    );
-  };
-
-  const handleTextCommit = () => {
-    setIsEditing(false);
-  };
-
-  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur();
-    }
-  };
-
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!preview) {
@@ -87,13 +66,19 @@ export default function TextElementView({ elementId, preview }: Props) {
     }
   };
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Передаем selectedElementIds и функцию для получения всех элементов
+    startDrag(e, element, selectedElementIds, getAllElements);
+  };
+
   return (
     <div
       className={`element ${isSelected ? 'selected' : ''}`}
-      onClick={handleClick}
+      onClick={(e) => onElementClick(e, elementId)}
       onDoubleClick={handleDoubleClick}
-      onPointerDown={(e) => startDrag(e, element)}
+      onPointerDown={handlePointerDown}
       style={{
+        // ... стили без изменений ...
         position: 'absolute',
         left: element.position.x,
         top: element.position.y,
@@ -121,9 +106,10 @@ export default function TextElementView({ elementId, preview }: Props) {
         fontWeight: element.bold ? 'bold' : 'normal',
         fontStyle: showPlaceholder ? 'italic' : element.italic ? 'italic' : 'normal',
         textDecoration: element.underline ? 'underline' : 'none',
-        border: preview ? 'none' : '1px solid #d1d5db',
+        border: isSelected && !preview ? '2px solid #3b82f6' : '1px solid #d1d5db',
       }}
     >
+      {/* ... остальной код без изменений ... */}
       {preview ? (
         element.content
       ) : isEditing ? (
@@ -131,9 +117,22 @@ export default function TextElementView({ elementId, preview }: Props) {
           autoFocus
           value={localContent}
           placeholder={element.placeholder}
-          onChange={handleTextChange}
-          onKeyDown={handleTextKeyDown}
-          onBlur={handleTextCommit}
+          onChange={(e) => {
+            const newContent = e.target.value;
+            setLocalContent(newContent);
+            dispatch(
+              updateTextContent({
+                elementId: elementId,
+                content: newContent,
+              })
+            );
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.currentTarget.blur();
+            }
+          }}
+          onBlur={() => setIsEditing(false)}
           style={{
             width: '100%',
             height: '100%',

@@ -10,7 +10,7 @@ interface Props {
 
 export default function ColorSection({ type }: Props) {
   const dispatch = useAppDispatch();
-  const selectedElementId = useAppSelector((state) => state.editor.selectedElementId);
+  const selectedElementId = useAppSelector((state) => state.editor.selectedElementIds);
 
   const onSelectColor = (color: string) => {
     switch (type) {

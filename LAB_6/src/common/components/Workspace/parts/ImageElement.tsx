@@ -1,8 +1,11 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../../store';
-import { selectElement, updateSlide } from '../../../../store/editorSlice';
-import { ImageElement as ImageElementType } from '../../../../store/types/presentation';
+import { updateSlide } from '../../../../store/editorSlice';
+import {
+  ImageElement as ImageElementType,
+  SlideElement,
+} from '../../../../store/types/presentation';
 import ResizeHandle from './ResizeHandle';
 import useDrag from '../hooks/useDrag';
 import useResize from '../hooks/useResize';
@@ -10,12 +13,20 @@ import useResize from '../hooks/useResize';
 interface Props {
   elementId: string;
   preview: boolean;
+  selectedElementIds: string[];
+  onElementClick: (e: React.MouseEvent, elementId: string) => void;
+  getAllElements: () => SlideElement[];
 }
 
-export default function ImageElementView({ elementId, preview }: Props) {
+export default function ImageElementView({
+  elementId,
+  preview,
+  selectedElementIds,
+  onElementClick,
+  getAllElements,
+}: Props) {
   const dispatch = useDispatch();
 
-  // Все данные из store
   const element = useSelector((state: RootState) => {
     const slide = state.editor.presentation.slides.find((s) =>
       s.elements.some((el) => el.id === elementId)
@@ -23,14 +34,12 @@ export default function ImageElementView({ elementId, preview }: Props) {
     return slide?.elements.find((el) => el.id === elementId) as ImageElementType | undefined;
   });
 
-  const isSelected = useSelector(
-    (state: RootState) => state.editor.selectedElementId === elementId
-  );
+  const isSelected = selectedElementIds.includes(elementId);
 
   const startDrag = useDrag({
     preview,
-    setSelElId: (id: string) => dispatch(selectElement(id)),
-    bringToFront: () => {}, // Убрали неиспользуемый параметр id
+    setSelElId: () => {},
+    bringToFront: () => {},
     updateSlide: (updater) => dispatch(updateSlide(updater)),
   });
 
@@ -39,18 +48,18 @@ export default function ImageElementView({ elementId, preview }: Props) {
     updateSlide: (updater) => dispatch(updateSlide(updater)),
   });
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    dispatch(selectElement(elementId));
-  };
-
   if (!element || element.type !== 'image') return null;
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Передаем selectedElementIds и функцию для получения всех элементов
+    startDrag(e, element, selectedElementIds, getAllElements);
+  };
 
   return (
     <div
       className={`element ${isSelected ? 'selected' : ''}`}
-      onClick={handleClick}
-      onPointerDown={(e) => startDrag(e, element)}
+      onClick={(e) => onElementClick(e, elementId)}
+      onPointerDown={handlePointerDown}
       style={{
         position: 'absolute',
         left: element.position.x,
@@ -63,6 +72,7 @@ export default function ImageElementView({ elementId, preview }: Props) {
         alignItems: 'center',
         justifyContent: 'center',
         pointerEvents: 'auto',
+        border: isSelected && !preview ? '2px solid #3b82f6' : '1px solid #d1d5db',
       }}
     >
       <img

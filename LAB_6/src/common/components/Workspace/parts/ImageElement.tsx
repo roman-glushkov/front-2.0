@@ -26,7 +26,7 @@ export default function ImageElementView({
   getAllElements,
 }: Props) {
   const dispatch = useDispatch();
-
+  //
   const element = useSelector((state: RootState) => {
     const slide = state.editor.presentation.slides.find((s) =>
       s.elements.some((el) => el.id === elementId)

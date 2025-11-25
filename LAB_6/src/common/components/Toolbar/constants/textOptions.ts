@@ -16,6 +16,13 @@ export const TEXT_SIZE_OPTIONS: TextOption[] = [
   { label: '32', key: '32px' },
   { label: '36', key: '36px' },
   { label: '48', key: '48px' },
+  { label: '54', key: '54px' },
+  { label: '60', key: '60px' },
+  { label: '66', key: '66px' },
+  { label: '72', key: '72px' },
+  { label: '80', key: '80px' },
+  { label: '88', key: '88px' },
+  { label: '96', key: '96px' },
 ];
 
 export const TEXT_ALIGN_OPTIONS: TextOption[] = [

@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { setActiveGroup } from '../../../../store/toolbarSlice';
 import { TAB_TITLES } from '../constants/config';
+import DemoButton from './DemoButton'; // Добавь этот импорт
 
 export default function ToolbarTabs() {
   const dispatch = useAppDispatch();
@@ -13,6 +14,9 @@ export default function ToolbarTabs() {
 
   return (
     <div className="toolbar-tabs">
+      {/* Кнопка Демо слева от вкладок */}
+      <DemoButton />
+
       {TAB_TITLES.map(({ key, name }) => (
         <button
           key={key}

@@ -3,6 +3,7 @@ import { Presentation, Slide, Background } from './types/presentation';
 import * as func from './functions/presentation';
 import * as temp from './templates/presentation';
 import * as sld from './templates/slide';
+import { demoPresentation } from './templates/demoPresentation';
 
 const initialPresentation: Presentation = {
   title: 'Новая презентация',
@@ -69,7 +70,12 @@ export const editorSlice = createSlice({
     clearSelection(state) {
       state.selectedElementIds = []; // Очищаем выделение
     },
-
+    loadDemoPresentation: (state) => {
+      state.presentation = demoPresentation;
+      state.selectedSlideId = demoPresentation.slides[0]?.id || '';
+      state.selectedSlideIds = demoPresentation.slides[0] ? [demoPresentation.slides[0].id] : [];
+      state.selectedElementIds = [];
+    },
     updateSlide(state, action: PayloadAction<(s: Slide) => Slide>) {
       const slideId = state.selectedSlideId;
       const slide = state.presentation.slides.find((s) => s.id === slideId);
@@ -318,6 +324,7 @@ export const {
   changeTitle,
   changeBackground,
   handleAction,
+  loadDemoPresentation,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

@@ -14,7 +14,6 @@ export default function ToolbarGroup() {
   const activeTextOption = useAppSelector((state) => state.toolbar.activeTextOption);
 
   const handleButtonClick = (action: string) => {
-    // Для кнопок, которые показывают всплывающие меню
     if (
       [
         'ADD_SLIDE',
@@ -28,7 +27,6 @@ export default function ToolbarGroup() {
     ) {
       dispatch(setActiveTextOption(activeTextOption === action ? null : action));
     } else {
-      // Для обычных действий
       dispatch(handleAction(action));
     }
   };
@@ -38,11 +36,7 @@ export default function ToolbarGroup() {
       {GROUPS[activeGroup].map((btn: GroupButton) => (
         <div key={btn.action} className="toolbar-button-wrapper">
           <button onClick={() => handleButtonClick(btn.action)}>{btn.label}</button>
-
-          {/* Меню добавления слайдов */}
           {btn.action === 'ADD_SLIDE' && activeTextOption === 'ADD_SLIDE' && <TemplatePopup />}
-
-          {/* Цветовые меню */}
           {btn.action === 'TEXT_COLOR' && activeTextOption === 'TEXT_COLOR' && (
             <ColorSection type="text" />
           )}
@@ -52,8 +46,6 @@ export default function ToolbarGroup() {
           {btn.action === 'SLIDE_BACKGROUND' && activeTextOption === 'SLIDE_BACKGROUND' && (
             <ColorSection type="background" />
           )}
-
-          {/* Размер текста */}
           {btn.action === 'TEXT_SIZE' && activeTextOption === 'TEXT_SIZE' && (
             <TextOptionsPopup
               options={TEXT_SIZE_OPTIONS.map((o) => o.key)}
@@ -63,12 +55,9 @@ export default function ToolbarGroup() {
               }}
             />
           )}
-
-          {/* Выравнивание */}
           {btn.action === 'TEXT_ALIGN' && activeTextOption === 'TEXT_ALIGN' && (
             <TextAlignPopup
               onSelect={(key: string) => {
-                // Определяем тип выравнивания по ключу
                 if (['left', 'right', 'center', 'justify'].includes(key)) {
                   dispatch(handleAction(`TEXT_ALIGN_HORIZONTAL:${key}`));
                 } else if (['top', 'middle', 'bottom'].includes(key)) {
@@ -78,8 +67,6 @@ export default function ToolbarGroup() {
               }}
             />
           )}
-
-          {/* Интервал */}
           {btn.action === 'TEXT_LINE_HEIGHT' && activeTextOption === 'TEXT_LINE_HEIGHT' && (
             <TextOptionsPopup
               options={LINE_HEIGHT_OPTIONS.map((o) => o.key)}

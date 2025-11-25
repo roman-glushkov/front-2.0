@@ -26,7 +26,6 @@ export default function ImageElementView({
   getAllElements,
 }: Props) {
   const dispatch = useDispatch();
-  //
   const element = useSelector((state: RootState) => {
     const slide = state.editor.presentation.slides.find((s) =>
       s.elements.some((el) => el.id === elementId)
@@ -51,7 +50,6 @@ export default function ImageElementView({
   if (!element || element.type !== 'image') return null;
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    // Передаем selectedElementIds и функцию для получения всех элементов
     startDrag(e, element, selectedElementIds, getAllElements);
   };
 

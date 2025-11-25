@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface ToolbarState {
   activeGroup: string;
-  activeTextOption: string | null; // новое поле
+  activeTextOption: string | null;
   showTemplates: boolean;
   showTextColorPicker: boolean;
   showFillColorPicker: boolean;
@@ -11,7 +11,7 @@ export interface ToolbarState {
 
 const initialState: ToolbarState = {
   activeGroup: 'slides',
-  activeTextOption: null, // инициализация
+  activeTextOption: null,
   showTemplates: false,
   showTextColorPicker: false,
   showFillColorPicker: false,
@@ -24,7 +24,7 @@ export const toolbarSlice = createSlice({
   reducers: {
     setActiveGroup(state, action: PayloadAction<string>) {
       state.activeGroup = action.payload;
-      state.activeTextOption = null; // сброс при смене вкладки
+      state.activeTextOption = null;
       state.showTemplates = false;
       state.showTextColorPicker = false;
       state.showFillColorPicker = false;

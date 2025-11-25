@@ -24,8 +24,6 @@ export function useSlidesDrag({
 
   const handleDragStart = (index: number) => {
     const slideId = localSlides[index].id;
-
-    // Если начинаем перетаскивать невыделенный слайд, выделяем его
     if (!selectedSlideIds.includes(slideId)) {
       setSelectedSlideIds([slideId]);
     }
@@ -68,12 +66,9 @@ export function useSlidesDrag({
 
       const firstSelectedIndex = selectedIndexes[0];
 
-      // Тянем вниз
       if (firstSelectedIndex < hoverIndex) {
         insertPosition = hoverIndex - selectedIndexes.length + 1;
-      }
-      // Тянем вверх
-      else {
+      } else {
         insertPosition = hoverIndex;
       }
 
@@ -82,7 +77,6 @@ export function useSlidesDrag({
       setLocalSlides(filteredSlides);
       onSlidesReorder?.(filteredSlides);
     } else {
-      // Перемещаем один слайд
       const [movedSlide] = updated.splice(dragIndex, 1);
       updated.splice(hoverIndex, 0, movedSlide);
       setLocalSlides(updated);

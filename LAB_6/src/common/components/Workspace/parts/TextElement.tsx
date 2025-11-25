@@ -67,7 +67,6 @@ export default function TextElementView({
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    // Передаем selectedElementIds и функцию для получения всех элементов
     startDrag(e, element, selectedElementIds, getAllElements);
   };
 
@@ -78,7 +77,6 @@ export default function TextElementView({
       onDoubleClick={handleDoubleClick}
       onPointerDown={handlePointerDown}
       style={{
-        // ... стили без изменений ...
         position: 'absolute',
         left: element.position.x,
         top: element.position.y,

@@ -2,14 +2,14 @@ import React from 'react';
 import { TEMPLATES } from '../constants/templates';
 import { useAppDispatch } from '../../../../store/hooks';
 import { handleAction } from '../../../../store/editorSlice';
-import { setActiveTextOption } from '../../../../store/toolbarSlice'; // Добавьте этот импорт
+import { setActiveTextOption } from '../../../../store/toolbarSlice';
 
 export default function TemplatePopup() {
   const dispatch = useAppDispatch();
 
   const handleSelect = (templateKey: string) => {
     dispatch(handleAction(templateKey));
-    dispatch(setActiveTextOption(null)); // Закрываем popup после выбора
+    dispatch(setActiveTextOption(null));
   };
 
   return (

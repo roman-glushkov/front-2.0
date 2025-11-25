@@ -24,23 +24,19 @@ export default function useDrag({ preview, setSelElId, bringToFront, updateSlide
     e: React.PointerEvent,
     el: SlideElement,
     selectedElementIds: string[] = [],
-    getAllElements: () => SlideElement[] // Новая функция для получения всех элементов
+    getAllElements: () => SlideElement[]
   ) => {
     if (preview) return;
     e.stopPropagation();
 
-    // Определяем какие элементы будем перемещать
     const elementsToDrag = selectedElementIds.includes(el.id) ? selectedElementIds : [el.id];
 
-    // Если текущий элемент не выделен, выделяем его
     if (!selectedElementIds.includes(el.id)) {
       setSelElId?.(el.id);
     }
 
-    // Поднимаем все выделенные элементы на передний план
     elementsToDrag.forEach((id) => bringToFront?.(id));
 
-    // Получаем позиции всех выделенных элементов
     const allElements = getAllElements();
     const origPositions = new Map();
 

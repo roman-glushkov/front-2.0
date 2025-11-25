@@ -16,7 +16,7 @@ export interface EditorState {
   presentation: Presentation;
   selectedSlideId: string;
   selectedSlideIds: string[];
-  selectedElementIds: string[]; // Изменили с selectedElementId на массив
+  selectedElementIds: string[];
   slides: Slide[];
 }
 
@@ -24,7 +24,7 @@ const initialState: EditorState = {
   presentation: initialPresentation,
   selectedSlideId: 'slide1',
   selectedSlideIds: ['slide1'],
-  selectedElementIds: [], // Теперь это массив
+  selectedElementIds: [],
   slides: initialPresentation.slides,
 };
 
@@ -36,25 +36,25 @@ export const editorSlice = createSlice({
       console.log('ID слайда:', action.payload);
       state.selectedSlideId = action.payload;
       state.selectedSlideIds = [action.payload];
-      state.selectedElementIds = []; // Очищаем выделение элементов
+      state.selectedElementIds = [];
     },
 
     selectSlides(state, action: PayloadAction<string[]>) {
       if (action.payload.length > 0) {
         state.selectedSlideIds = action.payload;
         state.selectedSlideId = action.payload[0];
-        state.selectedElementIds = []; // Очищаем выделение элементов
+        state.selectedElementIds = [];
       }
     },
 
     selectElement(state, action: PayloadAction<string>) {
       console.log('ID элемента:', action.payload);
-      state.selectedElementIds = [action.payload]; // Выделяем один элемент
+      state.selectedElementIds = [action.payload];
     },
 
     selectMultipleElements(state, action: PayloadAction<string[]>) {
       console.log('Выделены элементы:', action.payload);
-      state.selectedElementIds = action.payload; // Выделяем несколько элементов
+      state.selectedElementIds = action.payload;
     },
 
     addToSelection(state, action: PayloadAction<string>) {
@@ -68,7 +68,7 @@ export const editorSlice = createSlice({
     },
 
     clearSelection(state) {
-      state.selectedElementIds = []; // Очищаем выделение
+      state.selectedElementIds = [];
     },
     loadDemoPresentation: (state) => {
       state.presentation = demoPresentation;
@@ -102,7 +102,7 @@ export const editorSlice = createSlice({
       state.presentation = func.addSlide(state.presentation, action.payload);
       state.selectedSlideId = action.payload.id;
       state.selectedSlideIds = [action.payload.id];
-      state.selectedElementIds = []; // Очищаем выделение элементов
+      state.selectedElementIds = [];
     },
 
     removeSlide(state, action: PayloadAction<string>) {
@@ -112,7 +112,7 @@ export const editorSlice = createSlice({
       state.selectedSlideIds = state.presentation.slides[0]
         ? [state.presentation.slides[0].id]
         : [];
-      state.selectedElementIds = []; // Очищаем выделение элементов
+      state.selectedElementIds = [];
     },
 
     reorderSlides(state, action: PayloadAction<Slide[]>) {
@@ -138,7 +138,7 @@ export const editorSlice = createSlice({
       const act = action.payload;
       const slideId = state.selectedSlideId;
       const slide = state.presentation.slides.find((s) => s.id === slideId);
-      const elId = state.selectedElementIds[0]; // Берем первый выделенный элемент для операций
+      const elId = state.selectedElementIds[0];
       console.log('Совершенное действие:', act);
 
       const slideMap: Record<string, Slide> = {
@@ -158,7 +158,7 @@ export const editorSlice = createSlice({
         state.presentation = func.addSlide(state.presentation, newSlide);
         state.selectedSlideId = newSlide.id;
         state.selectedSlideIds = [newSlide.id];
-        state.selectedElementIds = []; // Очищаем выделение элементов
+        state.selectedElementIds = [];
         return;
       }
 
@@ -275,7 +275,7 @@ export const editorSlice = createSlice({
             state.selectedSlideIds = state.presentation.slides[0]
               ? [state.presentation.slides[0].id]
               : [];
-            state.selectedElementIds = []; // Очищаем выделение элементов
+            state.selectedElementIds = [];
           }
           break;
 
@@ -300,7 +300,7 @@ export const editorSlice = createSlice({
             state.presentation.slides = state.presentation.slides.map((s) =>
               s.id === slide.id ? func.removeElement(s, elId) : s
             );
-            state.selectedElementIds = state.selectedElementIds.filter((id) => id !== elId); // Удаляем из выделения
+            state.selectedElementIds = state.selectedElementIds.filter((id) => id !== elId);
           }
           break;
       }

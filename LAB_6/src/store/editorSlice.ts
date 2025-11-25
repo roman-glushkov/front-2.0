@@ -70,12 +70,14 @@ export const editorSlice = createSlice({
     clearSelection(state) {
       state.selectedElementIds = [];
     },
+
     loadDemoPresentation: (state) => {
       state.presentation = demoPresentation;
       state.selectedSlideId = demoPresentation.slides[0]?.id || '';
       state.selectedSlideIds = demoPresentation.slides[0] ? [demoPresentation.slides[0].id] : [];
       state.selectedElementIds = [];
     },
+
     updateSlide(state, action: PayloadAction<(s: Slide) => Slide>) {
       const slideId = state.selectedSlideId;
       const slide = state.presentation.slides.find((s) => s.id === slideId);
@@ -131,6 +133,21 @@ export const editorSlice = createSlice({
       console.log('Изменён фон слайда:', slide.id);
       state.presentation.slides = state.presentation.slides.map((s) =>
         s.id === slide.id ? func.changeBackground(s, action.payload) : s
+      );
+    },
+
+    addImageWithUrl(state, action: PayloadAction<string>) {
+      const slide = state.presentation.slides.find((s) => s.id === state.selectedSlideId);
+      if (!slide) return;
+
+      const imageElement = {
+        ...temp.createImageElement(),
+        src: action.payload,
+        id: `image-${Date.now()}`,
+      };
+
+      state.presentation.slides = state.presentation.slides.map((s) =>
+        s.id === slide.id ? func.addImage(s, imageElement) : s
       );
     },
 
@@ -325,6 +342,7 @@ export const {
   changeBackground,
   handleAction,
   loadDemoPresentation,
+  addImageWithUrl,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

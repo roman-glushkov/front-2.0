@@ -107,7 +107,6 @@ export default function TextElementView({
         border: isSelected && !preview ? '2px solid #3b82f6' : '1px solid #d1d5db',
       }}
     >
-      {/* ... остальной код без изменений ... */}
       {preview ? (
         element.content
       ) : isEditing ? (

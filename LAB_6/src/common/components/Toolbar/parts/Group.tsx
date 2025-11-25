@@ -3,6 +3,7 @@ import ColorSection from './ColorSection';
 import TextOptionsPopup from './TextOptionsPopup';
 import TextAlignPopup from './TextAlignPopup';
 import TemplatePopup from './TemplatePopup';
+import ImageUploadPopup from './ImageUploadPopup';
 import { TEXT_SIZE_OPTIONS, LINE_HEIGHT_OPTIONS } from '../constants/textOptions';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
 import { handleAction } from '../../../../store/editorSlice';
@@ -23,6 +24,7 @@ export default function ToolbarGroup() {
         'TEXT_SIZE',
         'TEXT_ALIGN',
         'TEXT_LINE_HEIGHT',
+        'ADD_IMAGE',
       ].includes(action)
     ) {
       dispatch(setActiveTextOption(activeTextOption === action ? null : action));
@@ -76,6 +78,7 @@ export default function ToolbarGroup() {
               }}
             />
           )}
+          {btn.action === 'ADD_IMAGE' && activeTextOption === 'ADD_IMAGE' && <ImageUploadPopup />}
         </div>
       ))}
     </div>

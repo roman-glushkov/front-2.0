@@ -1,3 +1,4 @@
+// src/store/editorSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Presentation, Slide, Background } from './types/presentation';
 import * as func from './functions/presentation';
@@ -12,12 +13,26 @@ const initialPresentation: Presentation = {
   selectedSlideIds: ['slide1'],
 };
 
+export interface EditorSnapshot {
+  presentation: Presentation;
+  selectedSlideId: string;
+  selectedSlideIds: string[];
+  selectedElementIds: string[];
+}
+
 export interface EditorState {
   presentation: Presentation;
   selectedSlideId: string;
   selectedSlideIds: string[];
   selectedElementIds: string[];
   slides: Slide[];
+
+  // история для undo/redo
+  history: {
+    past: EditorSnapshot[];
+    future: EditorSnapshot[];
+    maxItems: number;
+  };
 }
 
 const initialState: EditorState = {
@@ -26,14 +41,42 @@ const initialState: EditorState = {
   selectedSlideIds: ['slide1'],
   selectedElementIds: [],
   slides: initialPresentation.slides,
+  history: {
+    past: [],
+    future: [],
+    maxItems: 100, // ограничение длины истории
+  },
 };
+
+function makeSnapshot(state: EditorState): EditorSnapshot {
+  // NOTE: presentation и массивы — иммутабельны в вашей реализации,
+  // поэтому можно хранить ссылку; если где-то всё-таки мутируются объекты,
+  // можно глубже копировать. Здесь считаем структуру иммутабельной.
+  return {
+    presentation: state.presentation,
+    selectedSlideId: state.selectedSlideId,
+    selectedSlideIds: [...state.selectedSlideIds],
+    selectedElementIds: [...state.selectedElementIds],
+  };
+}
+
+function pushToPast(state: EditorState) {
+  const snap = makeSnapshot(state);
+  state.history.past.push(snap);
+  // тримим по maxItems
+  if (state.history.past.length > state.history.maxItems) {
+    state.history.past.shift();
+  }
+  // новая правка обнуляет future
+  state.history.future = [];
+}
 
 export const editorSlice = createSlice({
   name: 'editor',
   initialState,
   reducers: {
+    // ---------- selection reducers (не коммитим историю) ----------
     selectSlide(state, action: PayloadAction<string>) {
-      console.log('ID слайда:', action.payload);
       state.selectedSlideId = action.payload;
       state.selectedSlideIds = [action.payload];
       state.selectedElementIds = [];
@@ -48,12 +91,10 @@ export const editorSlice = createSlice({
     },
 
     selectElement(state, action: PayloadAction<string>) {
-      console.log('ID элемента:', action.payload);
       state.selectedElementIds = [action.payload];
     },
 
     selectMultipleElements(state, action: PayloadAction<string[]>) {
-      console.log('Выделены элементы:', action.payload);
       state.selectedElementIds = action.payload;
     },
 
@@ -71,7 +112,9 @@ export const editorSlice = createSlice({
       state.selectedElementIds = [];
     },
 
+    // ---------- actions that change presentation: before mutating — сохраняем в историю ----------
     loadDemoPresentation: (state) => {
+      pushToPast(state);
       state.presentation = demoPresentation;
       state.selectedSlideId = demoPresentation.slides[0]?.id || '';
       state.selectedSlideIds = demoPresentation.slides[0] ? [demoPresentation.slides[0].id] : [];
@@ -79,28 +122,28 @@ export const editorSlice = createSlice({
     },
 
     updateSlide(state, action: PayloadAction<(s: Slide) => Slide>) {
+      pushToPast(state);
       const slideId = state.selectedSlideId;
       const slide = state.presentation.slides.find((s) => s.id === slideId);
       if (!slide) return;
-      console.log('Слайд обновлён:', slideId);
       state.presentation.slides = state.presentation.slides.map((s) =>
         s.id === slideId ? action.payload(s) : s
       );
     },
 
     updateTextContent(state, action: PayloadAction<{ elementId: string; content: string }>) {
+      pushToPast(state);
       const { elementId, content } = action.payload;
       const slideId = state.selectedSlideId;
       const slide = state.presentation.slides.find((s) => s.id === slideId);
       if (!slide) return;
-      console.log('Обновлён текст элемента:', elementId, content);
       state.presentation.slides = state.presentation.slides.map((s) =>
         s.id === slideId ? func.changeText(s, elementId, content) : s
       );
     },
 
     addSlide(state, action: PayloadAction<Slide>) {
-      console.log('Добавлен слайд:', action.payload.id);
+      pushToPast(state);
       state.presentation = func.addSlide(state.presentation, action.payload);
       state.selectedSlideId = action.payload.id;
       state.selectedSlideIds = [action.payload.id];
@@ -108,7 +151,7 @@ export const editorSlice = createSlice({
     },
 
     removeSlide(state, action: PayloadAction<string>) {
-      console.log('Удалён слайд:', action.payload);
+      pushToPast(state);
       state.presentation = func.removeSlide(state.presentation, action.payload);
       state.selectedSlideId = state.presentation.slides[0]?.id || '';
       state.selectedSlideIds = state.presentation.slides[0]
@@ -118,25 +161,26 @@ export const editorSlice = createSlice({
     },
 
     reorderSlides(state, action: PayloadAction<Slide[]>) {
-      console.log('Перенумерованы слайды');
+      pushToPast(state);
       state.presentation.slides = action.payload;
     },
 
     changeTitle(state, action: PayloadAction<string>) {
-      console.log('Новое название презентации:', action.payload);
+      pushToPast(state);
       state.presentation.title = action.payload;
     },
 
     changeBackground(state, action: PayloadAction<Background>) {
+      pushToPast(state);
       const slide = state.presentation.slides.find((s) => s.id === state.selectedSlideId);
       if (!slide) return;
-      console.log('Изменён фон слайда:', slide.id);
       state.presentation.slides = state.presentation.slides.map((s) =>
         s.id === slide.id ? func.changeBackground(s, action.payload) : s
       );
     },
 
     addImageWithUrl(state, action: PayloadAction<string>) {
+      pushToPast(state);
       const slide = state.presentation.slides.find((s) => s.id === state.selectedSlideId);
       if (!slide) return;
 
@@ -156,7 +200,9 @@ export const editorSlice = createSlice({
       const slideId = state.selectedSlideId;
       const slide = state.presentation.slides.find((s) => s.id === slideId);
       const elId = state.selectedElementIds[0];
-      console.log('Совершенное действие:', act);
+      // для большинства действий фиксируем историю (если это действие меняет презентацию)
+      // простая эвристика: фиксируем всегда до обработки (можно оптимизировать)
+      pushToPast(state);
 
       const slideMap: Record<string, Slide> = {
         ADD_TITLE_SLIDE: sld.slideTitle,
@@ -322,6 +368,37 @@ export const editorSlice = createSlice({
           break;
       }
     },
+
+    // ---------- undo / redo ----------
+    undo(state) {
+      const past = state.history.past;
+      if (past.length === 0) return;
+      const last = past.pop()!; // взять последний snapshot
+      // текущий в future
+      const currentSnap = makeSnapshot(state);
+      state.history.future.push(currentSnap);
+
+      // восстановить
+      state.presentation = last.presentation;
+      state.selectedSlideId = last.selectedSlideId;
+      state.selectedSlideIds = [...last.selectedSlideIds];
+      state.selectedElementIds = [...last.selectedElementIds];
+    },
+
+    redo(state) {
+      const future = state.history.future;
+      if (future.length === 0) return;
+      const next = future.pop()!;
+      // текущий в past
+      const currentSnap = makeSnapshot(state);
+      state.history.past.push(currentSnap);
+
+      // восстановить
+      state.presentation = next.presentation;
+      state.selectedSlideId = next.selectedSlideId;
+      state.selectedSlideIds = [...next.selectedSlideIds];
+      state.selectedElementIds = [...next.selectedElementIds];
+    },
   },
 });
 
@@ -343,6 +420,8 @@ export const {
   handleAction,
   loadDemoPresentation,
   addImageWithUrl,
+  undo,
+  redo,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

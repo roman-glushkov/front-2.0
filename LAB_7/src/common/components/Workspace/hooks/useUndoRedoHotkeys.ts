@@ -24,10 +24,9 @@ export default function useUndoRedoHotkeys() {
       }
 
       // Redo:
-      // - Ctrl+Shift+Z / Ctrl+Shift+Я
       // - Ctrl+Y (EN)
       // - Ctrl+Н (RU)
-      if ((['z', 'я'].includes(key) && e.shiftKey) || key === 'y' || key === 'н') {
+      if (key === 'y' || key === 'н') {
         e.preventDefault();
         e.stopPropagation();
         dispatch(redo());

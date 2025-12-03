@@ -1,3 +1,4 @@
+// src/common/components/Workspace/hooks/useUndoRedoHotkeys.ts
 import { useEffect } from 'react';
 import { useAppDispatch } from '../../../../store/hooks';
 import { undo, redo } from '../../../../store/editorSlice';
@@ -7,28 +8,26 @@ export default function useUndoRedoHotkeys() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // поддержка mac и windows, русская раскладка
       const isMac = navigator.platform.toUpperCase().includes('MAC');
-
       const ctrl = isMac ? e.metaKey : e.ctrlKey;
+      if (!ctrl) return;
 
-      // Undo
-      if (ctrl && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+      const key = (e.key || '').toLowerCase();
+
+      // Undo: Ctrl+Z / Ctrl+Я (без shift)
+      if ((key === 'z' || key === 'я') && !e.shiftKey) {
         e.preventDefault();
         e.stopPropagation();
         dispatch(undo());
         return;
       }
 
-      // Redo (Ctrl+Shift+Z — macOS стандарт)
-      if (ctrl && e.key.toLowerCase() === 'z' && e.shiftKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        dispatch(redo());
-        return;
-      }
-
-      // Redo (Ctrl+Y — Windows стандарт)
-      if (ctrl && e.key.toLowerCase() === 'y') {
+      // Redo:
+      // - Ctrl+Shift+Z / Ctrl+Shift+Я
+      // - Ctrl+Y (EN)
+      // - Ctrl+Н (RU)
+      if ((['z', 'я'].includes(key) && e.shiftKey) || key === 'y' || key === 'н') {
         e.preventDefault();
         e.stopPropagation();
         dispatch(redo());
@@ -36,11 +35,7 @@ export default function useUndoRedoHotkeys() {
       }
     };
 
-    // обязательно keydown — не keyup
     window.addEventListener('keydown', handleKeyDown, { capture: true });
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown, { capture: true });
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
   }, [dispatch]);
 }

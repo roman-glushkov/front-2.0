@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
-import { selectSlide, selectSlides } from '../../../../store/editorSlice';
+import { selectSlide, selectSlides, reorderSlides } from '../../../../store/editorSlice';
 import { SlideRow } from './Row';
 import { useSlidesDrag } from '../hooks/useSlidesDrag';
 
@@ -9,12 +9,8 @@ export default function SlidesContainer() {
   const slides = useAppSelector((state) => state.editor.presentation.slides);
   const selectedSlideIds = useAppSelector((state) => state.editor.selectedSlideIds);
 
-  const setSelectedSlideIds: React.Dispatch<React.SetStateAction<string[]>> = (ids) => {
-    if (typeof ids === 'function') {
-      dispatch(selectSlides(ids(selectedSlideIds)));
-    } else {
-      dispatch(selectSlides(ids));
-    }
+  const setSelectedSlideIds = (ids: string[]) => {
+    dispatch(selectSlides(ids));
   };
 
   const { localSlides, hoverIndex, handleDragStart, handleDragEnter, handleDragEnd } =
@@ -22,9 +18,27 @@ export default function SlidesContainer() {
       slides,
       selectedSlideIds,
       setSelectedSlideIds,
+      onSlidesReorder: (newOrder) => {
+        dispatch(reorderSlides(newOrder));
+      },
     });
 
-  const handleSlideClick = (slideId: string, multi?: boolean) => {
+  const slideRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const selectedSlideId = selectedSlideIds[0];
+
+  useEffect(() => {
+    if (selectedSlideId) {
+      const ref = slideRefs.current[selectedSlideId];
+      if (ref) {
+        ref.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }
+    }
+  }, [selectedSlideId]);
+
+  const handleSlideClick = (slideId: string, multi: boolean) => {
     if (multi) {
       if (selectedSlideIds.includes(slideId)) {
         if (selectedSlideIds.length > 1) {
@@ -41,18 +55,24 @@ export default function SlidesContainer() {
   return (
     <div className="slides-container">
       {localSlides.map((slide, index) => (
-        <SlideRow
+        <div
           key={slide.id}
-          slide={slide}
-          index={index}
-          scale={0.25}
-          selected={selectedSlideIds.includes(slide.id)}
-          hovered={index === hoverIndex}
-          onClick={(e) => handleSlideClick(slide.id, e.ctrlKey || e.metaKey)}
-          onDragStart={() => handleDragStart(index)}
-          onDragEnter={() => handleDragEnter(index)}
-          onDragEnd={handleDragEnd}
-        />
+          ref={(el) => {
+            slideRefs.current[slide.id] = el;
+          }}
+        >
+          <SlideRow
+            slide={slide}
+            index={index}
+            scale={0.25}
+            selected={selectedSlideIds.includes(slide.id)}
+            hovered={index === hoverIndex}
+            onClick={(e) => handleSlideClick(slide.id, e.ctrlKey || e.metaKey)}
+            onDragStart={() => handleDragStart(index)}
+            onDragEnter={() => handleDragEnter(index)}
+            onDragEnd={handleDragEnd}
+          />
+        </div>
       ))}
     </div>
   );

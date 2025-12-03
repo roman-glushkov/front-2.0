@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Slide } from '../../../../store/types/presentation';
 
 interface UseSlidesLogicArgs {
   slides: Slide[];
   selectedSlideIds: string[];
-  setSelectedSlideIds: React.Dispatch<React.SetStateAction<string[]>>;
+  setSelectedSlideIds: (ids: string[]) => void;
   onSlidesReorder?: (newOrder: Slide[]) => void;
 }
 
@@ -18,73 +18,83 @@ export function useSlidesDrag({
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
+  const initialSlidesRef = useRef<Slide[]>([]);
+
   useEffect(() => {
     setLocalSlides(slides);
   }, [slides]);
 
   const handleDragStart = (index: number) => {
     const slideId = localSlides[index].id;
+
     if (!selectedSlideIds.includes(slideId)) {
       setSelectedSlideIds([slideId]);
     }
 
     setDragIndex(index);
+    initialSlidesRef.current = [...slides];
   };
 
   const handleDragEnter = (index: number) => {
     setHoverIndex(index);
+
+    if (dragIndex === null || dragIndex === index) return;
+
+    const updated = [...localSlides];
+    const newDragIndex = index;
+
+    if (selectedSlideIds.length > 1) {
+      // Мультивыделение
+      const selectedIndexes = updated
+        .map((slide, idx) => (selectedSlideIds.includes(slide.id) ? idx : -1))
+        .filter((idx) => idx !== -1)
+        .sort((a, b) => a - b);
+
+      const draggedSlides = selectedIndexes.map((idx) => updated[idx]);
+      const filteredSlides = updated.filter((_, idx) => !selectedIndexes.includes(idx));
+
+      let insertPosition = newDragIndex;
+      const firstSelectedIndex = selectedIndexes[0];
+
+      if (firstSelectedIndex < newDragIndex) {
+        insertPosition = newDragIndex - selectedIndexes.length + 1;
+      } else {
+        insertPosition = newDragIndex;
+      }
+
+      filteredSlides.splice(insertPosition, 0, ...draggedSlides);
+      setLocalSlides(filteredSlides);
+      setDragIndex(newDragIndex);
+    } else {
+      // Одиночное перетаскивание
+      const [movedSlide] = updated.splice(dragIndex, 1);
+      updated.splice(newDragIndex, 0, movedSlide);
+      setLocalSlides(updated);
+      setDragIndex(newDragIndex);
+    }
   };
 
   const handleDragEnd = () => {
-    console.log('=== DRAG END DEBUG ===');
-    console.log('dragIndex:', dragIndex);
-    console.log('hoverIndex:', hoverIndex);
-    console.log('selectedSlideIds:', selectedSlideIds);
-    console.log(
-      'localSlides:',
-      localSlides.map((s) => s.id)
-    );
-
-    if (dragIndex === null || hoverIndex === null || dragIndex === hoverIndex) {
+    if (dragIndex === null || hoverIndex === null) {
       setDragIndex(null);
       setHoverIndex(null);
       return;
     }
 
-    const updated = [...localSlides];
+    // Проверяем, изменился ли порядок слайдов
+    const hasOrderChanged =
+      JSON.stringify(initialSlidesRef.current.map((s) => s.id)) !==
+      JSON.stringify(localSlides.map((s) => s.id));
 
-    const selectedIndexes = updated
-      .map((slide, index) => (selectedSlideIds.includes(slide.id) ? index : -1))
-      .filter((index) => index !== -1)
-      .sort((a, b) => a - b);
-
-    if (selectedIndexes.length > 1) {
-      const draggedSlides = selectedIndexes.map((index) => updated[index]);
-      const filteredSlides = updated.filter((_, index) => !selectedIndexes.includes(index));
-
-      let insertPosition = hoverIndex;
-
-      const firstSelectedIndex = selectedIndexes[0];
-
-      if (firstSelectedIndex < hoverIndex) {
-        insertPosition = hoverIndex - selectedIndexes.length + 1;
-      } else {
-        insertPosition = hoverIndex;
-      }
-
-      filteredSlides.splice(insertPosition, 0, ...draggedSlides);
-
-      setLocalSlides(filteredSlides);
-      onSlidesReorder?.(filteredSlides);
+    if (hasOrderChanged) {
+      onSlidesReorder?.(localSlides);
     } else {
-      const [movedSlide] = updated.splice(dragIndex, 1);
-      updated.splice(hoverIndex, 0, movedSlide);
-      setLocalSlides(updated);
-      onSlidesReorder?.(updated);
+      setLocalSlides([...initialSlidesRef.current]);
     }
 
     setDragIndex(null);
     setHoverIndex(null);
+    initialSlidesRef.current = [];
   };
 
   return {
@@ -93,6 +103,5 @@ export function useSlidesDrag({
     handleDragStart,
     handleDragEnter,
     handleDragEnd,
-    setLocalSlides,
   };
 }
